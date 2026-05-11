@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Mike Blake — Career Timeline</title>
+<style>
+  :root {
+    --bg: #0e1116;
+    --panel: #161b22;
+    --panel-2: #1f2630;
+    --accent: #58a6ff;
+    --accent-2: #f0883e;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --line: #30363d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: radial-gradient(ellipse at top, #1a2233 0%, var(--bg) 60%);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 30px 0 40px;
+  }
+  header {
+    max-width: 1100px;
+    margin: 0 auto 20px;
+    padding: 0 20px;
+    text-align: center;
+  }
+  header h1 { margin: 0 0 6px; font-size: 2.2em; letter-spacing: 0.4px; }
+  header p { margin: 0; color: var(--muted); }
+
+  .legend {
+    max-width: 1100px;
+    margin: 0 auto 18px;
+    padding: 0 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    font-size: 0.85em;
+  }
+  .legend span {
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    cursor: pointer;
+    user-select: none;
+  }
+  .legend span.active { color: var(--text); border-color: var(--accent); }
+
+  .toggle-btn {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 0.85em;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .15s, border-color .15s, color .15s;
+  }
+  .toggle-btn:hover { border-color: var(--accent); }
+  .toggle-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .hover-detail {
+    max-width: 1100px;
+    margin: 20px auto 40px;
+    padding: 18px 22px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    min-height: 120px;
+    transition: border-color .2s;
+  }
+  .hover-detail .hover-empty { color: var(--muted); font-style: italic; text-align: center; padding: 20px 0; }
+  .hover-detail .hd-head { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+  .hover-detail .hd-head img { width: 42px; height: 42px; border-radius: 6px; background: #fff; padding: 3px; object-fit: contain; }
+  .hover-detail .hd-company { font-size: 1.2em; font-weight: 700; }
+  .hover-detail .hd-title { color: var(--muted); font-size: 0.95em; }
+  .hover-detail .hd-meta { color: var(--accent); font-size: 0.8em; text-transform: uppercase; letter-spacing: .5px; margin: 4px 0 10px; font-weight: 600; }
+  .hover-detail ul { margin: 8px 0; padding-left: 22px; }
+  .hover-detail ul li { margin: 4px 0; line-height: 1.45; }
+  .hover-detail .hd-section { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 10px; }
+  .hover-detail .hd-section > div { flex: 1; min-width: 240px; }
+  .hover-detail .hd-section h5 { margin: 0 0 6px; font-size: 0.75em; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 600; }
+  .hover-detail .hd-clients .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 10px 3px 4px; border-radius: 999px;
+    background: var(--panel-2); border: 1px solid var(--line);
+    font-size: 0.8em; margin: 2px 4px 2px 0;
+  }
+  .hover-detail .hd-clients .chip img { width: 16px; height: 16px; border-radius: 3px; background: #fff; padding: 1px; object-fit: contain; }
+  .hover-detail .hd-tags span {
+    font-size: 0.72em; padding: 2px 9px; border-radius: 999px;
+    background: var(--panel-2); border: 1px solid var(--line);
+    color: var(--muted); display: inline-block; margin: 2px 4px 2px 0;
+  }
+
+  /* horizontal scroll container */
+  .scroll-wrap {
+    overflow-x: auto;
+    overflow-y: visible;
+    padding: 10px 20px;
+  }
+  .scroll-wrap::-webkit-scrollbar { height: 12px; }
+  .scroll-wrap::-webkit-scrollbar-track { background: var(--panel); border-radius: 8px; }
+  .scroll-wrap::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
+  .scroll-wrap::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+  .timeline {
+    position: relative;
+    margin: 0 auto;
+  }
+  /* central horizontal axis (uses --axis-y so JS can shift it when elements need to grow upward) */
+  .timeline::before {
+    content: "";
+    position: absolute;
+    left: 0; right: 0;
+    top: var(--axis-y, 230px);
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--line) 4%, var(--line) 96%, transparent);
+    transform: translateY(-50%);
+    border-radius: 2px;
+    z-index: 0;
+  }
+
+  /* year tick labels */
+  .year-tick {
+    position: absolute;
+    top: 230px;
+    transform: translate(-50%, -50%);
+    background: var(--bg);
+    color: var(--muted);
+    font-size: 0.78em;
+    padding: 2px 8px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    z-index: 1;
+    white-space: nowrap;
+  }
+  .year-tick.decade {
+    color: var(--accent);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* role bar = horizontal coloured pill below the axis */
+  .role-bar {
+    position: absolute;
+    height: 18px;
+    border-radius: 9px;
+    opacity: 0.95;
+    z-index: 2;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .role-bar:hover { transform: translateY(1px); box-shadow: 0 4px 12px rgba(0,0,0,.6); }
+  .role-bar.dim { opacity: .2; filter: grayscale(.7); }
+
+  /* project bar = thin secondary stripe just below the parent role */
+  .project-bar {
+    position: absolute;
+    height: 10px;
+    border-radius: 5px;
+    opacity: 0.85;
+    z-index: 2;
+    border: 1px solid rgba(255,255,255,.15);
+  }
+
+  /* life band = above the axis */
+  .life-band {
+    position: absolute;
+    height: 14px;
+    border-radius: 7px;
+    background: linear-gradient(90deg, rgba(88,166,255,.3), rgba(88,166,255,.5));
+    border: 1px solid rgba(88,166,255,.6);
+    z-index: 2;
+  }
+  .life-band-label {
+    position: absolute;
+    color: var(--accent);
+    font-size: 0.82em;
+    white-space: nowrap;
+    padding: 2px 8px;
+    background: var(--panel);
+    border: 1px solid rgba(88,166,255,.4);
+    border-radius: 8px;
+    z-index: 3;
+  }
+
+  /* milestone = vertical pin from axis */
+  .milestone-pin {
+    position: absolute;
+    width: 2px;
+    background: var(--accent);
+    z-index: 2;
+  }
+  .milestone-dot {
+    position: absolute;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 3px solid var(--bg);
+    box-shadow: 0 0 0 2px var(--accent);
+    z-index: 3;
+    transform: translate(-50%, -50%);
+  }
+  .milestone-label {
+    position: absolute;
+    color: var(--text);
+    font-size: 0.78em;
+    padding: 6px 10px;
+    background: var(--panel-2);
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    z-index: 3;
+    transform: translateX(-50%);
+    text-align: center;
+    max-width: 180px;
+    line-height: 1.3;
+  }
+  .milestone-label .icon { display: block; font-size: 1.4em; margin-bottom: 2px; }
+
+  /* role card below the bar */
+  .role-card {
+    position: absolute;
+    width: 160px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 8px 10px;
+    z-index: 4;
+    cursor: pointer;
+    transition: transform .15s, border-color .15s, box-shadow .15s;
+  }
+  .role-card:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 8px 20px rgba(0,0,0,.5); }
+  .role-card.dim { opacity: .35; filter: grayscale(.6); }
+  .role-card .head {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .role-card .logo {
+    width: 30px; height: 30px;
+    border-radius: 6px;
+    background: #fff;
+    object-fit: contain;
+    padding: 3px;
+    flex-shrink: 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,.4);
+  }
+  .role-card .logo.missing { display: none; }
+  .role-card .title { font-weight: 500; font-size: 0.78em; color: var(--muted); line-height: 1.2; margin-top: 2px; }
+  .role-card .company { font-weight: 700; font-size: 0.9em; color: var(--text); line-height: 1.15; }
+  .role-card .duration { font-size: 0.68em; color: var(--accent); text-transform: uppercase; letter-spacing: .5px; margin-top: 5px; font-weight: 600; }
+  .role-card .clients { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
+  .role-card .clients img {
+    width: 18px; height: 18px; border-radius: 3px;
+    background: #fff; padding: 1px; object-fit: contain;
+  }
+  .role-card .clients img.missing { display: none; }
+
+  /* clients section in modal */
+  .modal .clients-list { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .modal .clients-list .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px 4px 4px; border-radius: 999px;
+    background: var(--panel-2); border: 1px solid var(--line);
+    font-size: 0.85em;
+  }
+  .modal .clients-list .chip img {
+    width: 18px; height: 18px; border-radius: 3px;
+    background: #fff; padding: 1px; object-fit: contain;
+  }
+  .modal h4 { margin: 16px 0 6px 0; font-size: 0.85em; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 600; }
+
+  /* connector line from card to bar */
+  .role-card::before {
+    content: "";
+    position: absolute;
+    left: 20px;
+    top: -14px;
+    width: 2px;
+    height: 14px;
+    background: var(--line);
+  }
+
+  /* color classes */
+  .c-milliman    { background: linear-gradient(90deg, #1f6feb, #388bfd); }
+  .c-1touch      { background: linear-gradient(90deg, #db61a2, #a371f7); }
+  .c-rbs         { background: linear-gradient(90deg, #3fb950, #2ea043); }
+  .c-benefex     { background: linear-gradient(90deg, #f0883e, #db6d28); }
+  .c-taylormade  { background: linear-gradient(90deg, #1abc9c, #16a085); }
+  .c-imeta       { background: linear-gradient(90deg, #d29922, #e3b341); }
+  .c-silversands { background: linear-gradient(90deg, #8957e5, #a371f7); }
+  .c-solent      { background: linear-gradient(90deg, #6e7681, #8b949e); }
+
+  /* modal */
+  .modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 100;
+  }
+  .modal-bg.open { display: flex; }
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    max-width: 720px;
+    width: 100%;
+    padding: 26px 28px;
+    box-shadow: 0 18px 60px rgba(0,0,0,.6);
+    animation: pop .18s ease-out;
+    position: relative;
+  }
+  @keyframes pop {
+    from { transform: scale(.95); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+  .modal h2 { margin: 0 0 4px; font-size: 1.5em; }
+  .modal .sub { color: var(--muted); margin-bottom: 4px; }
+  .modal .meta { color: var(--accent); font-size: 0.9em; margin-bottom: 16px; }
+  .modal ul { margin: 0; padding-left: 20px; line-height: 1.55; }
+  .modal ul li { margin-bottom: 8px; }
+  .modal .tags { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .modal .tags span {
+    font-size: 0.75em;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--muted);
+  }
+  .close-btn {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 1.8em;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  footer {
+    text-align: center;
+    color: var(--muted);
+    margin-top: 30px;
+    font-size: 0.82em;
+    padding: 0 20px;
+  }
+  .hint {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85em;
+    margin: 8px 0 4px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Mike Blake — Career Timeline</h1>
+  <p>Click a role for details · scroll wheel to zoom</p>
+</header>
+
+<div class="legend" id="legend" style="display:none"></div>
+
+<div style="text-align:center; margin: 0 auto 14px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+  <button id="toggleExams" class="toggle-btn active">🎓 Show certifications</button>
+</div>
+
+<div class="scroll-wrap">
+  <div class="timeline" id="timeline"></div>
+</div>
+
+<div id="hoverDetail" class="hover-detail">
+  <div class="hover-empty">Hover over a job to see details here</div>
+</div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <button class="close-btn" id="closeBtn" aria-label="Close">&times;</button>
+    <h2 id="mTitle"></h2>
+    <div class="sub" id="mCompany"></div>
+    <div class="meta" id="mMeta"></div>
+    <ul id="mList"></ul>
+    <h4 id="mClientsHeader" style="display:none">Clients</h4>
+    <div class="clients-list" id="mClients"></div>
+    <div class="tags" id="mTags"></div>
+  </div>
+</div>
+
+<footer>Built as a single self-contained HTML file</footer>
+
+<script>
+// --- data ---
+const roles = [
+  {
+    id: 'milliman',
+    kind: 'role',
+    title: 'Senior Software Developer',
+    company: 'Milliman UK',
+    location: 'Southampton',
+    start: '2015-02', end: '2026-05',
+    cls: 'c-milliman',
+    logo: 'https://www.google.com/s2/favicons?sz=128&domain=milliman.com',
+    tags: ['C#', '.NET', 'Angular', 'Event Sourcing', 'Azure Batch', 'Azure Storage', 'Power BI', 'SQL Server', 'Kubernetes', 'Microsoft Fabric'],
+    clients: [
+      { name: 'Royal London', logo: 'https://www.google.com/s2/favicons?sz=128&domain=royallondon.com' },
+      { name: 'Standard Life', logo: 'https://www.google.com/s2/favicons?sz=128&domain=standardlife.co.uk' }
+    ],
+    bullets: [
+      'Core .NET developer for a custom Extract / Transform / Load product built on an Event Source framework for robust, traceable, scalable messaging.',
+      'Implements features in C# and Angular so actuaries can run models at scale on Azure Batch — and supports / resolves issues running at scale.',
+      'Proactively automates deployments and manages releases in a timely, effective way.',
+      'Collaborated with Microsoft in Seattle to embed reporting capabilities within Integrate.',
+      'Drove adoption of new / preview technologies — Azure Storage, Power BI, SQL Server, Kubernetes and Fabric.',
+      'Drove improvements with simple yet robust solutions to hard problems, always with the end user in mind.'
+    ]
+  },
+  {
+    id: '1touch',
+    kind: 'role',
+    title: 'Product Consultant',
+    company: '1st Touch',
+    location: 'Southampton',
+    start: '2014-03', end: '2015-02',
+    cls: 'c-1touch',
+    logo: 'https://www.google.com/s2/favicons?sz=128&domain=aareon.com',
+    tags: ['C#', 'Mobile Forms Engine', 'UAT', 'CI/CD', 'Unit Tests', 'ReSharper', 'Technical Blogging'],
+    bullets: [
+      'Worked closely with clients through UAT to ensure the product met their requirements.',
+      'Authored C# workflow components on a custom mobile forms engine.',
+      'Created technical blog posts to assist other Consultants with the technology.',
+      'Introduced CI/CD, unit & integration tests and ReSharper — removing manual, error-prone steps and lifting productivity.'
+    ]
+  },
+  {
+    id: 'rbs',
+    kind: 'role',
+    title: 'Technical Lead',
+    company: 'Royal Bank of Scotland',
+    location: 'London',
+    start: '2011-08', end: '2013-11',
+    cls: 'c-rbs',
+    logo: 'https://www.google.com/s2/favicons?sz=128&domain=rbs.com',
+    tags: ['.NET', 'JIRA', 'SVN', 'TeamCity', 'NUnit', 'Waterfall→Agile', 'Reflection', 'NGen'],
+    clients: [
+      { name: 'NatWest',  logo: 'https://www.google.com/s2/favicons?sz=128&domain=natwest.com' },
+      { name: "Moody's",  logo: 'https://www.google.com/s2/favicons?sz=128&domain=moodys.com' }
+    ],
+    bullets: [
+      'Led the London software team of the Strategic Document Solution (SDS) managing Agreement data, co-ordinating with developers in India.',
+      'Tracked issues using JIRA + SVN with daily stand-ups and triage meetings; build servers with code analysis ensured collaborative delivery.',
+      'Adeptly transitioned the team from Waterfall to Agile (TeamCity / NUnit).',
+      'Troubleshot and debugged production-only issues caused by reflection and native image generation.'
+    ]
+  },
+  {
+    id: 'benefex',
+    kind: 'role',
+    title: 'Senior Software Developer',
+    company: 'Benefex',
+    location: 'Southampton',
+    start: '2010-10', end: '2011-08',
+    cls: 'c-benefex',
+    logo: 'https://www.google.com/s2/favicons?sz=128&domain=hellobenefex.com',
+    tags: ['ASP.NET MVC 3', 'jQuery', 'C#', 'NServiceBus', 'MSMQ', 'SQL 2008', 'LINQ2SQL', 'TeamCity', 'Selenium', 'ReSharper'],
+    clients: [
+      { name: 'Coca-Cola', logo: 'https://www.google.com/s2/favicons?sz=128&domain=coca-cola.com' }
+    ],
+    bullets: [
+      'Worked across the full Benefex architecture: ASP.NET MVC 3 site, jQuery front end and a dynamically compiled C# rule engine for instant user feedback.',
+      'Used NServiceBus with MSMQ to manage messaging onto SQL 2008 via stored procedures and LINQ2SQL.',
+      'Improved SCRUM sprint quality and speed via TeamCity, Selenium and ReSharper.',
+      'Collaborated with front-end designers to customise and brand each site (CSS, images).'
+    ]
+  },
+  {
+    id: 'taylormade',
+    kind: 'role',
+    title: 'Solutions Developer',
+    company: 'Taylor Made Computer Solutions',
+    location: 'Fareham',
+    start: '2010-05', end: '2010-10',
+    cls: 'c-taylormade',
+    logo: 'https://www.google.com/s2/favicons?sz=128&domain=tmcs.co.uk',
+    tags: ['.NET', 'C#', 'Solutions Delivery'],
+    bullets: [
+      'Solutions Developer building tailored software for Taylor Made\'s clients.'
+    ]
+  },
+  {
+    id: 'imeta',
+    kind: 'role',
+    title: 'Senior Software Consultant',
+    company: 'IMETA Technologies',
+    location: 'Southampton',
+    start: '2005-05', end: '2010-05',
+    cls: 'c-imeta',
+    logo: 'https://www.google.com/s2/favicons?sz=128&domain=imeta.com',
+    tags: ['.NET', 'C#', 'Consultancy', 'Northern Rock', 'M-Cashback', 'Masternaught Three X'],
+    clients: [
+      { name: 'Northern Rock', logo: 'https://www.google.com/s2/favicons?sz=128&domain=northernrock.co.uk' },
+      { name: 'Masternaut',    logo: 'https://www.google.com/s2/favicons?sz=128&domain=masternaut.com' }
+    ],
+    bullets: [
+      'Senior consultant delivering bespoke software to enterprise clients.',
+      'Key engagements: Northern Rock, M-Cashback and Masternaught Three X.'
+    ]
+  },
+  {
+    id: 'silversands',
+    kind: 'role',
+    title: 'Software Developer',
+    company: 'Silversands',
+    location: 'Poole',
+    start: '2003-02', end: '2005-05',
+    cls: 'c-silversands',
+    logo: 'https://www.google.com/s2/favicons?sz=128&domain=silversands.co.uk',
+    tags: ['.NET', 'C#', 'SQL Server'],
+    clients: [
+      { name: 'Heritage Lottery Fund', logo: 'https://www.google.com/s2/favicons?sz=128&domain=heritagefund.org.uk' },
+      { name: 'ExxonMobil',            logo: 'https://www.google.com/s2/favicons?sz=128&domain=exxonmobil.com' }
+    ],
+    bullets: [
+      'Software Developer at Silversands in Poole — early career role building business software solutions.'
+    ]
+  },
+  {
+    id: 'solent',
+    kind: 'role',
+    title: 'BSc (Hons) Software Engineering',
+    company: 'Southampton Institute',
+    location: 'Southampton',
+    start: '1999-09', end: '2002-06',
+    cls: 'c-solent',
+    logo: 'https://www.google.com/s2/favicons?sz=128&domain=solent.ac.uk',
+    tags: ['Education', 'Software Engineering'],
+    bullets: [
+      'Studied BSc (Hons) Software Engineering at Southampton Institute (now Solent University).'
+    ]
+  }
+];
+
+const milestones = [
+  { date: '2009-06', label: 'ISEB Foundation Certificate in Software Testing', icon: '✅' },
+  { date: '2007-09', label: 'Being Lean Training', icon: '⚙️' },
+  { date: '2004-06', label: '.NET Introduction — Microsoft (Internal training)', icon: '📘' },
+  { date: '2003-06', label: 'Microsoft Certified Professional Developer', icon: '📜' },
+  { date: '2002-06', label: 'BSc (Hons) Software Engineering', icon: '🎓', logo: 'https://www.google.com/s2/favicons?sz=128&domain=solent.ac.uk' }
+];
+
+const lifeBands = [
+  // { start: '2000-01', end: '2015-12', label: 'Lived in Southampton', icon: '📍' }
+];
+
+const projects = [
+  {
+    parent: 'milliman',
+    title: 'Microsoft Fabric',
+    start: '2023-01', end: '2026-01',
+    cls: 'c-milliman',
+    icon: '🧵',
+    desc: 'Adopting Microsoft Fabric — moving Power BI reporting and lakehouse data workloads onto the Fabric platform.'
+  }
+];
+
+// --- helpers ---
+function toDate(s) {
+  if (!s) return new Date();
+  const [y,m] = s.split('-').map(Number);
+  return new Date(y, m-1, 1);
+}
+function fmtMonth(s) {
+  if (!s) return 'Present';
+  return toDate(s).toLocaleString('en-GB', { month: 'short', year: 'numeric' });
+}
+function fmtRange(start, end) { return `${fmtMonth(start)} – ${fmtMonth(end)}`; }
+function durationLabel(s, e) {
+  const sd = toDate(s);
+  const ed = e ? toDate(e) : new Date();
+  let months = (ed.getFullYear() - sd.getFullYear()) * 12 + (ed.getMonth() - sd.getMonth());
+  const y = Math.floor(months/12), m = months % 12;
+  const parts = [];
+  if (y) parts.push(`${y} yr${y>1?'s':''}`);
+  if (m) parts.push(`${m} month${m>1?'s':''}`);
+  return parts.join(' ') || '<1 month';
+}
+
+// --- horizontal scale (fit to viewport width by default; wheel zooms) ---
+const minDate = toDate('1995-01');
+const maxDate = new Date();
+maxDate.setDate(1);
+const LEFT_PAD = 30, RIGHT_PAD = 30;
+const monthsBetween = (a, b) => (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth());
+const totalMonths = monthsBetween(minDate, maxDate);
+const scrollWrap = document.querySelector('.scroll-wrap');
+const VIEWPORT_W = Math.max(800, scrollWrap.clientWidth - 40);
+const BASE_PX_PER_MONTH = (VIEWPORT_W - LEFT_PAD - RIGHT_PAD) / totalMonths;
+let pxPerMonth = BASE_PX_PER_MONTH;
+
+const timeline = document.getElementById('timeline');
+const AXIS_Y = 230;
+let showExams = true;
+
+function xPx(d) { return LEFT_PAD + monthsBetween(minDate, d) * pxPerMonth; }
+
+// --- logo color extraction ---
+const logoColorCache = {};
+function extractLogoColor(url) {
+  if (!url) return Promise.resolve(null);
+  if (logoColorCache[url]) return Promise.resolve(logoColorCache[url]);
+  return new Promise(resolve => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const c = document.createElement('canvas');
+        c.width = img.naturalWidth || 32;
+        c.height = img.naturalHeight || 32;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const data = ctx.getImageData(0, 0, c.width, c.height).data;
+        const buckets = {};
+        let bestKey = null, bestScore = -1;
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
+          if (a < 200) continue;
+          // skip near-white, near-black, and near-grey
+          const max = Math.max(r,g,b), min = Math.min(r,g,b);
+          if (max > 240 && min > 240) continue;
+          if (max < 30) continue;
+          if (max - min < 25) continue;
+          // bucket to nearest 32
+          const key = `${r>>5},${g>>5},${b>>5}`;
+          const entry = buckets[key] || (buckets[key] = { r:0, g:0, b:0, n:0 });
+          entry.r += r; entry.g += g; entry.b += b; entry.n++;
+          const sat = (max - min);
+          const score = entry.n * (1 + sat / 80);
+          if (score > bestScore) { bestScore = score; bestKey = key; }
+        }
+        if (!bestKey) { resolve(null); return; }
+        const e = buckets[bestKey];
+        const color = { r: Math.round(e.r/e.n), g: Math.round(e.g/e.n), b: Math.round(e.b/e.n) };
+        logoColorCache[url] = color;
+        resolve(color);
+      } catch (err) {
+        resolve(null);
+      }
+    };
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+}
+function rgb(c) { return `rgb(${c.r},${c.g},${c.b})`; }
+function shade(c, pct) {
+  const f = pct < 0 ? 0 : 255, t = Math.abs(pct);
+  return { r: Math.round((f - c.r) * t + c.r), g: Math.round((f - c.g) * t + c.g), b: Math.round((f - c.b) * t + c.b) };
+}
+function applyLogoColor(el, logoUrl) {
+  extractLogoColor(logoUrl).then(c => {
+    if (!c) return;
+    const c2 = shade(c, 0.15);
+    el.style.background = `linear-gradient(90deg, ${rgb(c)}, ${rgb(c2)})`;
+  });
+}
+function applyRoleColor(roleId, logoUrl) {
+  extractLogoColor(logoUrl).then(c => {
+    if (!c) return;
+    const c2 = shade(c, 0.15);
+    document.querySelectorAll(`.role-bar[data-id="${roleId}"]`).forEach(el => {
+      el.style.background = `linear-gradient(90deg, ${rgb(c)}, ${rgb(c2)})`;
+    });
+    document.querySelectorAll(`.role-card[data-id="${roleId}"]`).forEach(el => {
+      el.style.borderColor = rgb(c);
+      el.style.background = `linear-gradient(180deg, rgba(${c.r},${c.g},${c.b},0.18), rgba(${c.r},${c.g},${c.b},0.06))`;
+    });
+  });
+}
+
+// --- collision helpers ---
+function elBox(el) {
+  const er = el.getBoundingClientRect();
+  const tr = timeline.getBoundingClientRect();
+  return { left: er.left - tr.left, top: er.top - tr.top, right: er.right - tr.left, bottom: er.bottom - tr.top };
+}
+function rectOverlap(a, b, m = 4) {
+  return !(a.right + m < b.left || a.left > b.right + m || a.bottom + m < b.top || a.top > b.bottom + m);
+}
+function pushAway(el, occupied, direction, step = 4, maxIter = 400) {
+  let rect = elBox(el);
+  let iter = 0;
+  while (occupied.some(o => rectOverlap(rect, o)) && iter++ < maxIter) {
+    const curTop = parseFloat(el.style.top) || 0;
+    el.style.top = (curTop + (direction === 'up' ? -step : step)) + 'px';
+    rect = elBox(el);
+  }
+  occupied.push(rect);
+  return rect;
+}
+
+function render() {
+  timeline.innerHTML = '';
+  timeline.style.setProperty('--axis-y', AXIS_Y + 'px');
+  const totalWidth = LEFT_PAD + totalMonths * pxPerMonth + RIGHT_PAD;
+  timeline.style.width = totalWidth + 'px';
+  // give the timeline a generous initial height so post-render measurement works
+  timeline.style.height = '900px';
+
+  const occAbove = [];   // rects in the above-axis zone (push 'up')
+  const occBelow = [];   // rects in the below-axis zone (push 'down')
+
+  // year ticks
+  const yearStep = pxPerMonth * 12 < 30 ? 10 : pxPerMonth * 12 < 60 ? 5 : 1;
+  const yearTickRects = [];
+  for (let y = minDate.getFullYear(); y <= maxDate.getFullYear(); y++) {
+    const isDecade = (y % 10 === 0);
+    if (y % yearStep !== 0 && !isDecade) continue;
+    const lbl = document.createElement('div');
+    lbl.className = 'year-tick' + (isDecade ? ' decade' : '');
+    lbl.textContent = y;
+    lbl.style.left = xPx(new Date(y, 0, 1)) + 'px';
+    timeline.appendChild(lbl);
+    yearTickRects.push(elBox(lbl));
+  }
+  // reserve year-tick space in both zones so nothing crosses the axis
+  occAbove.push(...yearTickRects);
+  occBelow.push(...yearTickRects);
+
+  // life bands (above)
+  lifeBands.forEach(b => {
+    const left = xPx(toDate(b.start));
+    const width = xPx(toDate(b.end)) - left;
+    const band = document.createElement('div');
+    band.className = 'life-band';
+    band.style.left = left + 'px';
+    band.style.width = width + 'px';
+    band.style.top = (AXIS_Y - 90) + 'px';
+    timeline.appendChild(band);
+    occAbove.push(elBox(band));
+
+    const lbl = document.createElement('div');
+    lbl.className = 'life-band-label';
+    lbl.textContent = `${b.icon} ${b.label} · ${durationLabel(b.start, b.end)}`;
+    lbl.style.left = (left + width/2) + 'px';
+    lbl.style.top = (AXIS_Y - 100) + 'px';
+    lbl.style.transform = 'translate(-50%, -100%)';
+    timeline.appendChild(lbl);
+    pushAway(lbl, occAbove, 'up');
+  });
+
+  // role bars (fixed Y, reserve space)
+  const ROLE_BAR_Y = AXIS_Y + 20;
+  const PROJECT_BAR_Y = ROLE_BAR_Y + 26;
+  const sortedRoles = [...roles].sort((a,b) => toDate(a.start) - toDate(b.start));
+  const roleBarEls = [];
+  sortedRoles.forEach(r => {
+    const left = xPx(toDate(r.start));
+    const right = xPx(r.end ? toDate(r.end) : maxDate);
+    const width = Math.max(8, right - left - 2);
+    const bar = document.createElement('div');
+    bar.className = 'role-bar ' + r.cls;
+    bar.style.left = (left + 1) + 'px';
+    bar.style.width = width + 'px';
+    bar.style.top = ROLE_BAR_Y + 'px';
+    bar.dataset.id = r.id;
+    bar.title = `${r.title} · ${r.company} (${durationLabel(r.start, r.end)})`;
+    bar.addEventListener('click', () => openModal(r));
+    bar.addEventListener('mouseenter', () => showHoverDetail(r));
+    timeline.appendChild(bar);
+    occBelow.push(elBox(bar));
+    roleBarEls.push({ r, left, right, width });
+  });
+
+  // project bars
+  const projectEntries = [];
+  projects.forEach(p => {
+    const left = xPx(toDate(p.start));
+    const right = xPx(p.end ? toDate(p.end) : maxDate);
+    const width = Math.max(8, right - left - 2);
+    const bar = document.createElement('div');
+    bar.className = 'project-bar ' + (p.cls || '');
+    bar.style.left = (left + 1) + 'px';
+    bar.style.width = width + 'px';
+    bar.style.top = PROJECT_BAR_Y + 'px';
+    bar.title = `${p.title} · ${durationLabel(p.start, p.end)}`;
+    timeline.appendChild(bar);
+    occBelow.push(elBox(bar));
+    projectEntries.push({ p, left, right, width });
+  });
+
+  // milestone dots (fixed on axis)
+  const sortedMilestones = showExams ? [...milestones].sort((a,b) => toDate(a.date) - toDate(b.date)) : [];
+  const milestoneEntries = [];
+  sortedMilestones.forEach(m => {
+    const x = xPx(toDate(m.date));
+    const dot = document.createElement('div');
+    dot.className = 'milestone-dot';
+    dot.style.left = x + 'px';
+    dot.style.top = AXIS_Y + 'px';
+    timeline.appendChild(dot);
+    milestoneEntries.push({ m, x });
+  });
+
+  // project labels — push down to avoid year ticks/bars/anything below them
+  projectEntries.forEach(({ p, left, right, width }) => {
+    if (width <= 80) return;
+    const lbl = document.createElement('div');
+    lbl.style.position = 'absolute';
+    lbl.style.left = (left + width/2) + 'px';
+    lbl.style.top = (PROJECT_BAR_Y + 16) + 'px';
+    lbl.style.transform = 'translateX(-50%)';
+    lbl.style.fontSize = '0.72em';
+    lbl.style.color = 'var(--muted)';
+    lbl.style.whiteSpace = 'nowrap';
+    lbl.style.zIndex = '3';
+    lbl.textContent = `${p.icon || '🔹'} ${p.title} · ${durationLabel(p.start, p.end)}`;
+    timeline.appendChild(lbl);
+    pushAway(lbl, occBelow, 'down');
+  });
+
+  // milestone labels — all above the axis so only jobs sit below
+  const milestoneLabels = [];
+  milestoneEntries.forEach(({ m, x }) => {
+    const lbl = document.createElement('div');
+    lbl.className = 'milestone-label';
+    const logoHtml = m.logo ? `<img src="${m.logo}" style="width:24px;height:24px;border-radius:4px;background:#fff;padding:2px;display:block;margin:0 auto 4px" onerror="this.style.display='none'">` : `<span class="icon">${m.icon}</span>`;
+    lbl.innerHTML = `${logoHtml}${m.label}`;
+    lbl.style.left = x + 'px';
+    lbl.style.top = (AXIS_Y - 28) + 'px';
+    lbl.style.transform = 'translate(-50%, -100%)';
+    timeline.appendChild(lbl);
+    pushAway(lbl, occAbove, 'up');
+    milestoneLabels.push({ lbl, x, above: true });
+  });
+
+  // pins connecting each milestone dot to its resolved label
+  milestoneLabels.forEach(({ lbl, x, above }) => {
+    const box = elBox(lbl);
+    const pin = document.createElement('div');
+    pin.className = 'milestone-pin';
+    pin.style.left = (x - 1) + 'px';
+    if (above) {
+      pin.style.top = (box.bottom + 2) + 'px';
+      pin.style.height = (AXIS_Y - box.bottom - 2) + 'px';
+    } else {
+      pin.style.top = AXIS_Y + 'px';
+      pin.style.height = (box.top - AXIS_Y - 2) + 'px';
+    }
+    timeline.appendChild(pin);
+  });
+
+  // role cards — placed below their role bar; pushed down to avoid all prior below-zone content
+  const CARD_W = 160;
+  roleBarEls.forEach(({ r, left, right }) => {
+    const cardLeft = Math.max(LEFT_PAD, Math.min(right - CARD_W, totalWidth - CARD_W - LEFT_PAD));
+    const card = document.createElement('div');
+    card.className = 'role-card';
+    card.dataset.id = r.id;
+    card.style.left = cardLeft + 'px';
+    card.style.top = (ROLE_BAR_Y + 40) + 'px';
+    card.innerHTML = `
+      <div class="head">
+        <img class="logo" src="${r.logo || ''}" alt="" onerror="this.classList.add('missing')">
+        <div>
+          <div class="company">${r.company}</div>
+          <div class="title">${r.title}</div>
+        </div>
+      </div>
+      <div class="duration">${durationLabel(r.start, r.end)}</div>
+      ${r.clients && r.clients.length ? `<div class="clients">${r.clients.map(c => `<img src="${c.logo}" title="${c.name}" alt="${c.name}" onerror="this.classList.add('missing')">`).join('')}</div>` : ''}
+    `;
+    card.addEventListener('click', () => openModal(r));
+    card.addEventListener('mouseenter', () => showHoverDetail(r));
+    timeline.appendChild(card);
+    pushAway(card, occBelow, 'down');
+    applyRoleColor(r.id, r.logo);
+  });
+
+  // compute final timeline bounds — shift everything down if anything went above 0
+  let minTop = 0, maxBottom = AXIS_Y + 80;
+  occAbove.forEach(b => { if (b.top < minTop) minTop = b.top; });
+  occBelow.forEach(b => { if (b.bottom > maxBottom) maxBottom = b.bottom; });
+  if (minTop < 0) {
+    const shift = -minTop + 16;
+    Array.from(timeline.children).forEach(el => {
+      const t = parseFloat(el.style.top);
+      if (!isNaN(t)) el.style.top = (t + shift) + 'px';
+    });
+    timeline.style.setProperty('--axis-y', (AXIS_Y + shift) + 'px');
+    maxBottom += shift;
+  }
+  timeline.style.height = (maxBottom + 24) + 'px';
+}
+
+render();
+
+// --- hover detail panel ---
+const hoverDetail = document.getElementById('hoverDetail');
+function showHoverDetail(r) {
+  const logoImg = r.logo ? `<img src="${r.logo}" alt="" onerror="this.style.display='none'">` : '';
+  const bullets = (r.bullets || []).map(b => `<li>${b}</li>`).join('');
+  const clients = (r.clients && r.clients.length)
+    ? `<div><h5>Clients</h5>${r.clients.map(c => `<span class="chip"><img src="${c.logo}" alt="" onerror="this.style.display='none'">${c.name}</span>`).join('')}</div>`
+    : '';
+  const tags = (r.tags && r.tags.length)
+    ? `<div><h5>Skills &amp; Tech</h5>${r.tags.map(t => `<span>${t}</span>`).join('')}</div>`
+    : '';
+  hoverDetail.innerHTML = `
+    <div class="hd-head">
+      ${logoImg}
+      <div>
+        <div class="hd-company">${r.company}</div>
+        <div class="hd-title">${r.title}</div>
+      </div>
+    </div>
+    <div class="hd-meta">${fmtRange(r.start, r.end)} · ${durationLabel(r.start, r.end)}</div>
+    <ul>${bullets}</ul>
+    <div class="hd-section">
+      <div class="hd-clients">${clients}</div>
+      <div class="hd-tags">${tags}</div>
+    </div>
+  `;
+}
+const toggleExamsBtn = document.getElementById('toggleExams');
+toggleExamsBtn.addEventListener('click', () => {
+  showExams = !showExams;
+  toggleExamsBtn.classList.toggle('active', showExams);
+  toggleExamsBtn.textContent = showExams ? '🎓 Hide certifications' : '🎓 Show certifications';
+  render();
+});
+
+// --- skill filters ---
+const legend = document.getElementById('legend');
+// curated/normalised top skills with display names
+const skillGroups = [
+  { label: 'C#',           match: ['c#'] },
+  { label: '.NET',         match: ['.net'] },
+  { label: 'Angular',      match: ['angular'] },
+  { label: 'SQL Server',   match: ['sql server', 'sql 2008', 'sql'] },
+  { label: 'Azure',        match: ['azure batch', 'azure storage', 'azure'] },
+  { label: 'Power BI',     match: ['power bi'] },
+  { label: 'Kubernetes',   match: ['kubernetes'] },
+  { label: 'Microsoft Fabric', match: ['microsoft fabric', 'fabric'] },
+  { label: 'Event Sourcing',   match: ['event sourcing'] },
+  { label: 'CI/CD',        match: ['ci/cd', 'teamcity'] },
+  { label: 'Testing',      match: ['nunit', 'selenium', 'unit tests'] },
+  { label: 'ASP.NET MVC',  match: ['asp.net mvc 3', 'asp.net mvc'] },
+  { label: 'Consultancy',  match: ['consultancy'] },
+];
+
+function rolesMatchingSkill(group) {
+  const tokens = group.match.map(t => t.toLowerCase());
+  return roles.filter(r => (r.tags || []).some(tag => {
+    const t = tag.toLowerCase();
+    return tokens.some(tok => t === tok || t.includes(tok));
+  })).map(r => r.id);
+}
+
+let activeSkill = null;
+function applySkillFilter() {
+  const matchingIds = activeSkill ? rolesMatchingSkill(activeSkill) : null;
+  document.querySelectorAll('.role-bar, .role-card').forEach(el => {
+    const id = el.dataset.id;
+    el.classList.toggle('dim', !!matchingIds && !matchingIds.includes(id));
+  });
+}
+
+skillGroups.forEach(group => {
+  if (rolesMatchingSkill(group).length === 0) return;
+  const s = document.createElement('span');
+  s.textContent = group.label;
+  s.addEventListener('click', () => {
+    if (activeSkill === group) {
+      activeSkill = null;
+      legend.querySelectorAll('span').forEach(el => el.classList.remove('active'));
+    } else {
+      activeSkill = group;
+      legend.querySelectorAll('span').forEach(el => el.classList.remove('active'));
+      s.classList.add('active');
+    }
+    applySkillFilter();
+  });
+  legend.appendChild(s);
+});
+
+// re-apply filter after every render (zoom rebuilds elements)
+const _origRender = render;
+render = function() { _origRender.apply(this, arguments); applySkillFilter(); };
+
+// --- modal ---
+const modalBg = document.getElementById('modalBg');
+function openModal(r) {
+  const logoImg = r.logo ? `<img src="${r.logo}" alt="" style="width:36px;height:36px;border-radius:6px;background:#fff;padding:3px;vertical-align:middle;margin-right:10px;object-fit:contain" onerror="this.style.display='none'">` : '';
+  document.getElementById('mTitle').innerHTML = logoImg + r.company;
+  document.getElementById('mCompany').textContent = r.title;
+  document.getElementById('mMeta').textContent = `${fmtRange(r.start, r.end)} · ${durationLabel(r.start, r.end)}`;
+  const ul = document.getElementById('mList');
+  ul.innerHTML = '';
+  r.bullets.forEach(b => { const li = document.createElement('li'); li.textContent = b; ul.appendChild(li); });
+  const clientsHeader = document.getElementById('mClientsHeader');
+  const clientsList = document.getElementById('mClients');
+  clientsList.innerHTML = '';
+  if (r.clients && r.clients.length) {
+    clientsHeader.style.display = '';
+    r.clients.forEach(c => {
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.innerHTML = `<img src="${c.logo}" alt="" onerror="this.style.display='none'">${c.name}`;
+      clientsList.appendChild(chip);
+    });
+  } else {
+    clientsHeader.style.display = 'none';
+  }
+  const tags = document.getElementById('mTags');
+  tags.innerHTML = '';
+  r.tags.forEach(t => { const s = document.createElement('span'); s.textContent = t; tags.appendChild(s); });
+  modalBg.classList.add('open');
+}
+document.getElementById('closeBtn').addEventListener('click', () => modalBg.classList.remove('open'));
+modalBg.addEventListener('click', e => { if (e.target === modalBg) modalBg.classList.remove('open'); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') modalBg.classList.remove('open'); });
+
+// --- wheel zoom ---
+const MIN_SCALE = 0.5, MAX_SCALE = 10;
+scrollWrap.addEventListener('wheel', e => {
+  e.preventDefault();
+  const rect = timeline.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  const monthAtMouse = (mouseX - LEFT_PAD) / pxPerMonth;
+
+  const factor = e.deltaY < 0 ? 1.18 : 1/1.18;
+  const minPx = MIN_SCALE * BASE_PX_PER_MONTH;
+  const maxPx = MAX_SCALE * BASE_PX_PER_MONTH;
+  pxPerMonth = Math.max(minPx, Math.min(maxPx, pxPerMonth * factor));
+  render();
+
+  // keep the same month under the cursor
+  const newMouseX = LEFT_PAD + monthAtMouse * pxPerMonth;
+  scrollWrap.scrollLeft += (newMouseX - mouseX);
+}, { passive: false });
+
+// auto-reflow on resize
+window.addEventListener('resize', () => location.reload());
+</script>
+</body>
+</html>
