@@ -370,7 +370,7 @@
 
 <header>
   <h1>Mike Blake — Career Timeline</h1>
-  <p>Click a role for details · scroll wheel to zoom</p>
+  <p>Click a role for details</p>
 </header>
 
 <div class="legend" id="legend" style="display:none"></div>
@@ -598,7 +598,7 @@ function durationLabel(s, e) {
   return parts.join(' ') || '<1 month';
 }
 
-// --- horizontal scale (fit to viewport width by default; wheel zooms) ---
+// --- horizontal scale (fit to viewport width) ---
 const minDate = toDate('1995-01');
 const maxDate = new Date();
 maxDate.setDate(1);
@@ -1031,25 +1031,6 @@ function openModal(r) {
 document.getElementById('closeBtn').addEventListener('click', () => modalBg.classList.remove('open'));
 modalBg.addEventListener('click', e => { if (e.target === modalBg) modalBg.classList.remove('open'); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') modalBg.classList.remove('open'); });
-
-// --- wheel zoom ---
-const MIN_SCALE = 0.5, MAX_SCALE = 10;
-scrollWrap.addEventListener('wheel', e => {
-  e.preventDefault();
-  const rect = timeline.getBoundingClientRect();
-  const mouseX = e.clientX - rect.left;
-  const monthAtMouse = (mouseX - LEFT_PAD) / pxPerMonth;
-
-  const factor = e.deltaY < 0 ? 1.18 : 1/1.18;
-  const minPx = MIN_SCALE * BASE_PX_PER_MONTH;
-  const maxPx = MAX_SCALE * BASE_PX_PER_MONTH;
-  pxPerMonth = Math.max(minPx, Math.min(maxPx, pxPerMonth * factor));
-  render();
-
-  // keep the same month under the cursor
-  const newMouseX = LEFT_PAD + monthAtMouse * pxPerMonth;
-  scrollWrap.scrollLeft += (newMouseX - mouseX);
-}, { passive: false });
 
 // auto-reflow on resize
 window.addEventListener('resize', () => location.reload());
