@@ -9,10 +9,16 @@
     --panel: #161b22;
     --panel-2: #1f2630;
     --accent: #58a6ff;
-    --accent-2: #f0883e;
+    --accent-2: #79b8ff;
     --text: #e6edf3;
     --muted: #8b949e;
     --line: #30363d;
+    --role: #58a6ff;
+    --role-2: #1f6feb;
+    --c-exam: #f0c674;
+    --c-train: #b48ead;
+    --c-project: #8fbc8f;
+    --c-mile: #8b949e;
   }
   * { box-sizing: border-box; }
   body {
@@ -109,8 +115,11 @@
     background: var(--panel-2); border: 1px solid var(--line);
     color: var(--muted); display: inline-block; margin: 2px 4px 2px 0;
   }
-  .cl-mile { border-left-color: #c084fc; }
-  .cl-project { border-left-color: #34d399; }
+  .cl-mile { border-left-color: var(--c-mile); }
+  .cl-mile.cl-exam { border-left-color: var(--c-exam); }
+  .cl-mile.cl-train { border-left-color: var(--c-train); }
+  .cl-project { border-left-color: var(--c-project); }
+  .cl-role { border-left-color: var(--role); }
 
   /* clickable affordance on timeline elements */
   .role-bar, .project-bar, .milestone-dot, .role-card, .milestone-label { cursor: pointer; }
@@ -303,14 +312,10 @@
   }
 
   /* color classes */
-  .c-milliman    { background: linear-gradient(90deg, #1f6feb, #388bfd); }
-  .c-1touch      { background: linear-gradient(90deg, #db61a2, #a371f7); }
-  .c-rbs         { background: linear-gradient(90deg, #3fb950, #2ea043); }
-  .c-benefex     { background: linear-gradient(90deg, #f0883e, #db6d28); }
-  .c-taylormade  { background: linear-gradient(90deg, #1abc9c, #16a085); }
-  .c-imeta       { background: linear-gradient(90deg, #d29922, #e3b341); }
-  .c-silversands { background: linear-gradient(90deg, #8957e5, #a371f7); }
-  .c-solent      { background: linear-gradient(90deg, #6e7681, #8b949e); }
+  .c-milliman, .c-1touch, .c-rbs, .c-benefex,
+  .c-taylormade, .c-imeta, .c-silversands, .c-solent {
+    background: linear-gradient(90deg, var(--role-2), var(--role));
+  }
 
   /* modal */
   .modal-bg {
@@ -695,17 +700,8 @@ function applyLogoColor(el, logoUrl) {
   });
 }
 function applyRoleColor(roleId, logoUrl) {
-  extractLogoColor(logoUrl).then(c => {
-    if (!c) return;
-    const c2 = shade(c, 0.15);
-    document.querySelectorAll(`.role-bar[data-id="${roleId}"]`).forEach(el => {
-      el.style.background = `linear-gradient(90deg, ${rgb(c)}, ${rgb(c2)})`;
-    });
-    document.querySelectorAll(`.role-card[data-id="${roleId}"]`).forEach(el => {
-      el.style.borderColor = rgb(c);
-      el.style.background = `linear-gradient(180deg, rgba(${c.r},${c.g},${c.b},0.18), rgba(${c.r},${c.g},${c.b},0.06))`;
-    });
-  });
+  // Theme: unified accent for all roles — favicon-derived colors disabled for a cohesive palette.
+  return;
 }
 
 // --- collision helpers ---
@@ -830,14 +826,17 @@ function render() {
   sortedMilestones.forEach((m, idx) => {
     const x = xPx(toDate(m.date));
     const mid = 'mile-' + idx;
+    const typeColor = m.isExam ? 'var(--c-exam)' : (m.isTraining ? 'var(--c-train)' : 'var(--c-mile)');
     const dot = document.createElement('div');
     dot.className = 'milestone-dot';
     dot.style.left = x + 'px';
     dot.style.top = AXIS_Y + 'px';
+    dot.style.background = typeColor;
+    dot.style.boxShadow = `0 0 0 2px ${typeColor}`;
     dot.style.cursor = 'pointer';
     dot.addEventListener('click', () => scrollToCard(mid));
     timeline.appendChild(dot);
-    milestoneEntries.push({ m, x, mid });
+    milestoneEntries.push({ m, x, mid, typeColor });
   });
 
   // project labels — push down to avoid year ticks/bars/anything below them
@@ -859,10 +858,12 @@ function render() {
 
   // milestone labels — all above the axis so only jobs sit below
   const milestoneLabels = [];
-  milestoneEntries.forEach(({ m, x, mid }) => {
+  milestoneEntries.forEach(({ m, x, mid, typeColor }) => {
     const lbl = document.createElement('div');
     lbl.className = 'milestone-label';
     lbl.style.cursor = 'pointer';
+    lbl.style.borderColor = typeColor;
+    lbl.style.color = typeColor;
     lbl.addEventListener('click', () => scrollToCard(mid));
     const logoHtml = m.logo ? `<img src="${m.logo}" style="width:24px;height:24px;border-radius:4px;background:#fff;padding:2px;display:block;margin:0 auto 4px" onerror="this.style.display='none'">` : `<span class="icon">${m.icon}</span>`;
     lbl.innerHTML = `${logoHtml}${m.label}`;
@@ -991,7 +992,7 @@ function buildCardList() {
     const logoHtml = m.logo
       ? `<img class="cl-logo" src="${m.logo}" alt="" onerror="this.style.display='none'">`
       : `<div class="cl-logo cl-icon">${m.icon || '📌'}</div>`;
-    return `<article class="cl-card cl-mile" id="mile-${it.idx}">
+    return `<article class="cl-card cl-mile ${m.isExam ? 'cl-exam' : ''} ${m.isTraining ? 'cl-train' : ''}" id="mile-${it.idx}">
       <header class="cl-head">${logoHtml}
         <div><div class="cl-company">${m.label}</div>
         <div class="cl-title">${typeLabel}</div></div></header>
