@@ -124,6 +124,28 @@
   /* clickable affordance on timeline elements */
   .role-bar, .project-bar, .milestone-dot, .role-card, .milestone-label { cursor: pointer; }
 
+  /* mobile: the horizontal timeline becomes unreadable on narrow screens —
+     hide it and show only the filter buttons + vertical card list */
+  @media (max-width: 720px) {
+    body { padding: 14px 0; }
+    header h1 { font-size: 1.4em; padding: 0 14px; }
+    header p { font-size: 0.85em; padding: 0 14px; }
+    .scroll-wrap { display: none; }
+    .legend { display: none !important; }
+    .card-list { margin: 14px auto 24px; gap: 10px; padding: 0 12px; }
+    .cl-card { padding: 12px 14px; border-radius: 8px; }
+    .cl-head { gap: 10px; margin-bottom: 4px; }
+    .cl-logo { width: 36px; height: 36px; }
+    .cl-company { font-size: 1.02em; }
+    .cl-title { font-size: 0.82em; }
+    .cl-meta { font-size: 0.7em; margin: 2px 0 8px; }
+    .cl-bullets { padding-left: 18px; font-size: 0.9em; }
+    .cl-section { flex-direction: column; gap: 10px; }
+    .cl-block { min-width: 0; }
+    .cl-tag { font-size: 0.68em; }
+    .toggle-btn { padding: 6px 10px; font-size: 0.78em; }
+  }
+
   /* horizontal scroll container */
   .scroll-wrap {
     overflow-x: auto;
