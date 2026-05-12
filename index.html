@@ -67,39 +67,53 @@
   .toggle-btn:hover { border-color: var(--accent); }
   .toggle-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-  .hover-detail {
+  /* vertical card list (full details, newest first) */
+  .card-list {
     max-width: 1100px;
-    margin: 20px auto 40px;
-    padding: 18px 22px;
+    margin: 28px auto 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 0 20px;
+  }
+  .cl-card {
     background: var(--panel);
     border: 1px solid var(--line);
-    border-radius: 12px;
-    min-height: 120px;
-    transition: border-color .2s;
+    border-left: 4px solid var(--accent);
+    border-radius: 10px;
+    padding: 16px 20px;
+    scroll-margin-top: 16px;
+    transition: border-color .25s, box-shadow .25s, background .25s;
   }
-  .hover-detail .hover-empty { color: var(--muted); font-style: italic; text-align: center; padding: 20px 0; }
-  .hover-detail .hd-head { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
-  .hover-detail .hd-head img { width: 42px; height: 42px; border-radius: 6px; background: #fff; padding: 3px; object-fit: contain; }
-  .hover-detail .hd-company { font-size: 1.2em; font-weight: 700; }
-  .hover-detail .hd-title { color: var(--muted); font-size: 0.95em; }
-  .hover-detail .hd-meta { color: var(--accent); font-size: 0.8em; text-transform: uppercase; letter-spacing: .5px; margin: 4px 0 10px; font-weight: 600; }
-  .hover-detail ul { margin: 8px 0; padding-left: 22px; }
-  .hover-detail ul li { margin: 4px 0; line-height: 1.45; }
-  .hover-detail .hd-section { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 10px; }
-  .hover-detail .hd-section > div { flex: 1; min-width: 240px; }
-  .hover-detail .hd-section h5 { margin: 0 0 6px; font-size: 0.75em; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 600; }
-  .hover-detail .hd-clients .chip {
+  .cl-card.flash { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(63,140,255,.35); background: var(--panel-2); }
+  .cl-head { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
+  .cl-logo { width: 42px; height: 42px; border-radius: 6px; background: #fff; padding: 3px; object-fit: contain; flex-shrink: 0; }
+  .cl-logo.cl-icon { background: var(--panel-2); display: flex; align-items: center; justify-content: center; font-size: 22px; padding: 0; }
+  .cl-company { font-size: 1.15em; font-weight: 700; }
+  .cl-title { color: var(--muted); font-size: 0.9em; }
+  .cl-meta { color: var(--accent); font-size: 0.78em; text-transform: uppercase; letter-spacing: .5px; margin: 4px 0 10px; font-weight: 600; }
+  .cl-bullets { margin: 8px 0; padding-left: 22px; }
+  .cl-bullets li { margin: 4px 0; line-height: 1.45; }
+  .cl-section { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 10px; }
+  .cl-block { flex: 1; min-width: 240px; }
+  .cl-block h5 { margin: 0 0 6px; font-size: 0.72em; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 600; }
+  .cl-chip {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 3px 10px 3px 4px; border-radius: 999px;
     background: var(--panel-2); border: 1px solid var(--line);
     font-size: 0.8em; margin: 2px 4px 2px 0;
   }
-  .hover-detail .hd-clients .chip img { width: 16px; height: 16px; border-radius: 3px; background: #fff; padding: 1px; object-fit: contain; }
-  .hover-detail .hd-tags span {
+  .cl-chip img { width: 16px; height: 16px; border-radius: 3px; background: #fff; padding: 1px; object-fit: contain; }
+  .cl-tag {
     font-size: 0.72em; padding: 2px 9px; border-radius: 999px;
     background: var(--panel-2); border: 1px solid var(--line);
     color: var(--muted); display: inline-block; margin: 2px 4px 2px 0;
   }
+  .cl-mile { border-left-color: #c084fc; }
+  .cl-project { border-left-color: #34d399; }
+
+  /* clickable affordance on timeline elements */
+  .role-bar, .project-bar, .milestone-dot, .role-card, .milestone-label { cursor: pointer; }
 
   /* horizontal scroll container */
   .scroll-wrap {
@@ -384,9 +398,7 @@
   <div class="timeline" id="timeline"></div>
 </div>
 
-<div id="hoverDetail" class="hover-detail">
-  <div class="hover-empty">Hover over a job to see details here</div>
-</div>
+<div id="cardList" class="card-list"></div>
 
 <div class="modal-bg" id="modalBg">
   <div class="modal">
@@ -783,8 +795,7 @@ function render() {
     bar.style.top = ROLE_BAR_Y + 'px';
     bar.dataset.id = r.id;
     bar.title = `${r.title} · ${r.company} (${durationLabel(r.start, r.end)})`;
-    bar.addEventListener('click', () => openModal(r));
-    bar.addEventListener('mouseenter', () => showHoverDetail(r));
+    bar.addEventListener('click', () => scrollToCard('role-' + r.id));
     timeline.appendChild(bar);
     occBelow.push(elBox(bar));
     roleBarEls.push({ r, left, right, width });
@@ -816,14 +827,17 @@ function render() {
     })
     .sort((a,b) => toDate(a.date) - toDate(b.date));
   const milestoneEntries = [];
-  sortedMilestones.forEach(m => {
+  sortedMilestones.forEach((m, idx) => {
     const x = xPx(toDate(m.date));
+    const mid = 'mile-' + idx;
     const dot = document.createElement('div');
     dot.className = 'milestone-dot';
     dot.style.left = x + 'px';
     dot.style.top = AXIS_Y + 'px';
+    dot.style.cursor = 'pointer';
+    dot.addEventListener('click', () => scrollToCard(mid));
     timeline.appendChild(dot);
-    milestoneEntries.push({ m, x });
+    milestoneEntries.push({ m, x, mid });
   });
 
   // project labels — push down to avoid year ticks/bars/anything below them
@@ -845,9 +859,11 @@ function render() {
 
   // milestone labels — all above the axis so only jobs sit below
   const milestoneLabels = [];
-  milestoneEntries.forEach(({ m, x }) => {
+  milestoneEntries.forEach(({ m, x, mid }) => {
     const lbl = document.createElement('div');
     lbl.className = 'milestone-label';
+    lbl.style.cursor = 'pointer';
+    lbl.addEventListener('click', () => scrollToCard(mid));
     const logoHtml = m.logo ? `<img src="${m.logo}" style="width:24px;height:24px;border-radius:4px;background:#fff;padding:2px;display:block;margin:0 auto 4px" onerror="this.style.display='none'">` : `<span class="icon">${m.icon}</span>`;
     lbl.innerHTML = `${logoHtml}${m.label}`;
     lbl.style.left = x + 'px';
@@ -894,8 +910,7 @@ function render() {
       <div class="duration">${durationLabel(r.start, r.end)}</div>
       ${r.clients && r.clients.length ? `<div class="clients">${r.clients.map(c => `<img src="${c.logo}" title="${c.name}" alt="${c.name}" onerror="this.classList.add('missing')">`).join('')}</div>` : ''}
     `;
-    card.addEventListener('click', () => openModal(r));
-    card.addEventListener('mouseenter', () => showHoverDetail(r));
+    card.addEventListener('click', () => scrollToCard('role-' + r.id));
     timeline.appendChild(card);
     pushAway(card, occBelow, 'down');
     applyRoleColor(r.id, r.logo);
@@ -919,33 +934,72 @@ function render() {
 
 render();
 
-// --- hover detail panel ---
-const hoverDetail = document.getElementById('hoverDetail');
-function showHoverDetail(r) {
-  const logoImg = r.logo ? `<img src="${r.logo}" alt="" onerror="this.style.display='none'">` : '';
-  const bullets = (r.bullets || []).map(b => `<li>${b}</li>`).join('');
-  const clients = (r.clients && r.clients.length)
-    ? `<div><h5>Clients</h5>${r.clients.map(c => `<span class="chip"><img src="${c.logo}" alt="" onerror="this.style.display='none'">${c.name}</span>`).join('')}</div>`
-    : '';
-  const tags = (r.tags && r.tags.length)
-    ? `<div><h5>Skills &amp; Tech</h5>${r.tags.map(t => `<span>${t}</span>`).join('')}</div>`
-    : '';
-  hoverDetail.innerHTML = `
-    <div class="hd-head">
-      ${logoImg}
-      <div>
-        <div class="hd-company">${r.company}</div>
-        <div class="hd-title">${r.title}</div>
-      </div>
-    </div>
-    <div class="hd-meta">${fmtRange(r.start, r.end)} · ${durationLabel(r.start, r.end)}</div>
-    <ul>${bullets}</ul>
-    <div class="hd-section">
-      <div class="hd-clients">${clients}</div>
-      <div class="hd-tags">${tags}</div>
-    </div>
-  `;
+// --- card list (vertical, newest first) ---
+const cardList = document.getElementById('cardList');
+function scrollToCard(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  el.classList.add('flash');
+  setTimeout(() => el.classList.remove('flash'), 1500);
 }
+function buildCardList() {
+  const sortedMilestones = [...milestones]
+    .filter(m => {
+      if (m.isExam) return showExams;
+      if (m.isTraining) return showTraining;
+      return true;
+    });
+  const items = [];
+  roles.forEach(r => items.push({ kind: 'role', date: r.start, sortDate: r.end || '9999-12', data: r }));
+  projects.forEach(p => items.push({ kind: 'project', date: p.start, sortDate: p.end || '9999-12', data: p }));
+  sortedMilestones.forEach((m, idx) => items.push({ kind: 'mile', date: m.date, sortDate: m.date, data: m, idx }));
+  items.sort((a,b) => toDate(b.sortDate) - toDate(a.sortDate));
+
+  cardList.innerHTML = items.map(it => {
+    if (it.kind === 'role') {
+      const r = it.data;
+      const logoImg = r.logo ? `<img class="cl-logo" src="${r.logo}" alt="" onerror="this.style.display='none'">` : '';
+      const bullets = (r.bullets || []).map(b => `<li>${b}</li>`).join('');
+      const clients = (r.clients && r.clients.length)
+        ? `<div class="cl-block"><h5>Clients</h5>${r.clients.map(c => `<span class="cl-chip"><img src="${c.logo}" alt="" onerror="this.style.display='none'">${c.name}</span>`).join('')}</div>`
+        : '';
+      const tags = (r.tags && r.tags.length)
+        ? `<div class="cl-block"><h5>Skills &amp; Tech</h5>${r.tags.map(t => `<span class="cl-tag">${t}</span>`).join('')}</div>`
+        : '';
+      return `<article class="cl-card cl-role ${r.cls || ''}" id="role-${r.id}">
+        <header class="cl-head">${logoImg}
+          <div><div class="cl-company">${r.company}</div>
+          <div class="cl-title">${r.title}</div></div></header>
+        <div class="cl-meta">${fmtRange(r.start, r.end)} · ${durationLabel(r.start, r.end)}</div>
+        <ul class="cl-bullets">${bullets}</ul>
+        <div class="cl-section">${clients}${tags}</div>
+      </article>`;
+    }
+    if (it.kind === 'project') {
+      const p = it.data;
+      return `<article class="cl-card cl-project ${p.cls || ''}" id="project-${(p.title||'').replace(/\s+/g,'-')}">
+        <header class="cl-head"><div><div class="cl-company">${p.icon || '🔹'} ${p.title}</div>
+        <div class="cl-title">Project</div></div></header>
+        <div class="cl-meta">${fmtRange(p.start, p.end)} · ${durationLabel(p.start, p.end)}</div>
+        ${p.desc ? `<p>${p.desc}</p>` : ''}
+      </article>`;
+    }
+    // milestone
+    const m = it.data;
+    const typeLabel = m.isExam ? 'Certification / Exam' : (m.isTraining ? 'Training' : 'Milestone');
+    const logoHtml = m.logo
+      ? `<img class="cl-logo" src="${m.logo}" alt="" onerror="this.style.display='none'">`
+      : `<div class="cl-logo cl-icon">${m.icon || '📌'}</div>`;
+    return `<article class="cl-card cl-mile" id="mile-${it.idx}">
+      <header class="cl-head">${logoHtml}
+        <div><div class="cl-company">${m.label}</div>
+        <div class="cl-title">${typeLabel}</div></div></header>
+      <div class="cl-meta">${fmtRange(m.date, m.date)}</div>
+    </article>`;
+  }).join('');
+}
+
 const toggleExamsBtn = document.getElementById('toggleExams');
 toggleExamsBtn.addEventListener('click', () => {
   showExams = !showExams;
@@ -1017,7 +1071,8 @@ skillGroups.forEach(group => {
 
 // re-apply filter after every render (zoom rebuilds elements)
 const _origRender = render;
-render = function() { _origRender.apply(this, arguments); applySkillFilter(); };
+render = function() { _origRender.apply(this, arguments); applySkillFilter(); buildCardList(); };
+buildCardList();
 
 // --- modal ---
 const modalBg = document.getElementById('modalBg');
