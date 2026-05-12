@@ -932,13 +932,43 @@ function render() {
   const ROW1_TOP = ROLE_BAR_Y - CARD_H - 10;      // closest to the bar
   const ROW2_TOP = ROW1_TOP - CARD_H - 12;        // further above
   const rowOccupants = [[], []];
+  const GAP = 8;
+  const minLeft = LEFT_PAD;
+  const maxLeft = totalWidth - CARD_W - LEFT_PAD;
+  // For a given row and desired left, find the nearest left that doesn't overlap.
+  // Returns { left, dist } or null if no space exists in [minLeft, maxLeft].
+  const findSpot = (row, desiredLeft) => {
+    const occ = [...rowOccupants[row]].sort((a,b) => a[0] - b[0]);
+    // Build free intervals
+    const free = [];
+    let cursor = minLeft;
+    occ.forEach(([l, rg]) => {
+      const blockStart = l - GAP;
+      const blockEnd = rg + GAP;
+      if (blockStart - cursor >= CARD_W) free.push([cursor, blockStart - CARD_W]);
+      cursor = Math.max(cursor, blockEnd);
+    });
+    if (maxLeft - cursor >= 0) free.push([cursor, maxLeft]);
+    if (!free.length) return null;
+    let best = null;
+    free.forEach(([lo, hi]) => {
+      const clamped = Math.max(lo, Math.min(desiredLeft, hi));
+      const d = Math.abs(clamped - desiredLeft);
+      if (!best || d < best.dist) best = { left: clamped, dist: d };
+    });
+    return best;
+  };
   const sortedByStart = [...roleBarEls].sort((a,b) => a.left - b.left);
   sortedByStart.forEach(({ r, left, right }) => {
     const center = (left + right) / 2;
-    let cardLeft = Math.max(LEFT_PAD, Math.min(center - CARD_W / 2, totalWidth - CARD_W - LEFT_PAD));
+    const desired = Math.max(minLeft, Math.min(center - CARD_W / 2, maxLeft));
+    const s0 = findSpot(0, desired);
+    const s1 = findSpot(1, desired);
+    let row, cardLeft;
+    if (s0 && (!s1 || s0.dist <= s1.dist)) { row = 0; cardLeft = s0.left; }
+    else if (s1) { row = 1; cardLeft = s1.left; }
+    else { row = 1; cardLeft = desired; } // last-resort fallback
     const cardRight = cardLeft + CARD_W;
-    const fits = row => !rowOccupants[row].some(([l,rg]) => !(cardRight + 8 < l || cardLeft > rg + 8));
-    const row = fits(0) ? 0 : 1;
     rowOccupants[row].push([cardLeft, cardRight]);
     const card = document.createElement('div');
     card.className = 'role-card';
