@@ -175,18 +175,19 @@
     z-index: 0;
   }
 
-  /* year tick labels */
+  /* year tick labels — sit just BELOW the axis (jobs are above) */
   .year-tick {
     position: absolute;
-    top: 230px;
-    transform: translate(-50%, -50%);
+    top: calc(var(--axis-y, 230px) + 4px);
+    transform: translateX(-50%);
     background: var(--bg);
-    color: var(--muted);
-    font-size: 0.78em;
+    color: var(--text);
+    font-size: 0.82em;
+    font-weight: 600;
     padding: 2px 8px;
     border: 1px solid var(--line);
     border-radius: 999px;
-    z-index: 1;
+    z-index: 3;
     white-space: nowrap;
   }
   .year-tick.decade {
