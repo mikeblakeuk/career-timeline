@@ -957,7 +957,27 @@ function buildCardList() {
   sortedMilestones.forEach((m, idx) => items.push({ kind: 'mile', date: m.date, sortDate: m.date, data: m, idx }));
   items.sort((a,b) => toDate(b.sortDate) - toDate(a.sortDate));
 
+  // bright (newest) → dark (oldest) blue scale based on item start date
+  const itemDate = it => toDate(it.kind === 'mile' ? it.data.date : it.data.start);
+  const dates = items.map(itemDate);
+  const minTs = Math.min(...dates), maxTs = Math.max(...dates);
+  // bright newest, dark oldest
+  const newColor = { r: 88, g: 166, b: 255 };   // #58a6ff
+  const oldColor = { r: 13, g: 36,  b: 81  };   // deep navy
+  function ageBg(it) {
+    const t = (itemDate(it) - minTs) / (maxTs - minTs || 1); // 0=old → 1=new
+    const lerp = (a,b) => Math.round(a + (b - a) * t);
+    const r = lerp(oldColor.r, newColor.r);
+    const g = lerp(oldColor.g, newColor.g);
+    const b = lerp(oldColor.b, newColor.b);
+    // darken slightly so text stays readable
+    const f = 0.55;
+    return `rgb(${Math.round(r*f)}, ${Math.round(g*f)}, ${Math.round(b*f)})`;
+  }
+
   cardList.innerHTML = items.map(it => {
+    const bg = ageBg(it);
+    const styleAttr = `style="background:${bg}"`;
     if (it.kind === 'role') {
       const r = it.data;
       const logoImg = r.logo ? `<img class="cl-logo" src="${r.logo}" alt="" onerror="this.style.display='none'">` : '';
@@ -968,7 +988,7 @@ function buildCardList() {
       const tags = (r.tags && r.tags.length)
         ? `<div class="cl-block"><h5>Skills &amp; Tech</h5>${r.tags.map(t => `<span class="cl-tag">${t}</span>`).join('')}</div>`
         : '';
-      return `<article class="cl-card cl-role ${r.cls || ''}" id="role-${r.id}">
+      return `<article class="cl-card cl-role ${r.cls || ''}" id="role-${r.id}" ${styleAttr}>
         <header class="cl-head">${logoImg}
           <div><div class="cl-company">${r.company}</div>
           <div class="cl-title">${r.title}</div></div></header>
@@ -979,7 +999,7 @@ function buildCardList() {
     }
     if (it.kind === 'project') {
       const p = it.data;
-      return `<article class="cl-card cl-project ${p.cls || ''}" id="project-${(p.title||'').replace(/\s+/g,'-')}">
+      return `<article class="cl-card cl-project ${p.cls || ''}" id="project-${(p.title||'').replace(/\s+/g,'-')}" ${styleAttr}>
         <header class="cl-head"><div><div class="cl-company">${p.icon || '🔹'} ${p.title}</div>
         <div class="cl-title">Project</div></div></header>
         <div class="cl-meta">${fmtRange(p.start, p.end)} · ${durationLabel(p.start, p.end)}</div>
@@ -992,7 +1012,7 @@ function buildCardList() {
     const logoHtml = m.logo
       ? `<img class="cl-logo" src="${m.logo}" alt="" onerror="this.style.display='none'">`
       : `<div class="cl-logo cl-icon">${m.icon || '📌'}</div>`;
-    return `<article class="cl-card cl-mile ${m.isExam ? 'cl-exam' : ''} ${m.isTraining ? 'cl-train' : ''}" id="mile-${it.idx}">
+    return `<article class="cl-card cl-mile ${m.isExam ? 'cl-exam' : ''} ${m.isTraining ? 'cl-train' : ''}" id="mile-${it.idx}" ${styleAttr}>
       <header class="cl-head">${logoHtml}
         <div><div class="cl-company">${m.label}</div>
         <div class="cl-title">${typeLabel}</div></div></header>
