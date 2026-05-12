@@ -125,14 +125,14 @@
   /* clickable affordance on timeline elements */
   .role-bar, .project-bar, .milestone-dot, .role-card, .milestone-label { cursor: pointer; }
 
-  /* mobile: the horizontal timeline becomes unreadable on narrow screens —
-     hide it and show only the filter buttons + vertical card list */
+  /* mobile: tighten the vertical card list. The horizontal timeline is kept
+     visible but scrolls horizontally (it's already inside .scroll-wrap). */
   @media (max-width: 720px) {
     body { padding: 14px 0; }
     header h1 { font-size: 1.4em; padding: 0 14px; }
     header p { font-size: 0.85em; padding: 0 14px; }
-    .scroll-wrap { display: none; }
     .legend { display: none !important; }
+    .scroll-wrap { padding: 6px 10px; }
     .card-list { margin: 14px auto 24px; gap: 10px; padding: 0 12px; }
     .cl-card { padding: 12px 14px; border-radius: 8px; }
     .cl-head { gap: 10px; margin-bottom: 4px; }
@@ -1151,8 +1151,16 @@ document.getElementById('closeBtn').addEventListener('click', () => modalBg.clas
 modalBg.addEventListener('click', e => { if (e.target === modalBg) modalBg.classList.remove('open'); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') modalBg.classList.remove('open'); });
 
-// auto-reflow on resize
-window.addEventListener('resize', () => location.reload());
+// auto-reflow on resize — width-only & debounced (avoid reload thrash on mobile
+// where the URL bar collapsing changes height)
+let _lastW = window.innerWidth;
+let _resizeT = null;
+window.addEventListener('resize', () => {
+  if (window.innerWidth === _lastW) return;
+  _lastW = window.innerWidth;
+  clearTimeout(_resizeT);
+  _resizeT = setTimeout(() => location.reload(), 250);
+});
 </script>
 </body>
 </html>
