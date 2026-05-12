@@ -447,7 +447,6 @@
 
 <div style="text-align:center; margin: 0 auto 14px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
   <button id="toggleExams" class="toggle-btn active">🎓 Hide certifications</button>
-  <button id="toggleTraining" class="toggle-btn active">⚙️ Hide training</button>
 </div>
 
 <div class="scroll-wrap">
@@ -646,7 +645,6 @@ const milestones = [
   { date: '2004-09', label: 'Exams 305, 310 and 229 — VB.NET Web Apps, XML Web Services & SQL Server 2000', icon: '📜', isExam: true },
   // Other milestones
   { date: '2009-06', label: 'ISEB Foundation Certificate in Software Testing', icon: '📜', isExam: true },
-  { date: '2007-09', label: 'Being Lean Training', icon: '⚙️', isTraining: true },
   { date: '2002-06', label: 'BSc (Hons) Software Engineering', icon: '🎓', logo: 'https://www.google.com/s2/favicons?sz=128&domain=solent.ac.uk' }
 ];
 
@@ -1234,12 +1232,14 @@ toggleExamsBtn.addEventListener('click', () => {
   render();
 });
 const toggleTrainingBtn = document.getElementById('toggleTraining');
-toggleTrainingBtn.addEventListener('click', () => {
-  showTraining = !showTraining;
-  toggleTrainingBtn.classList.toggle('active', showTraining);
-  toggleTrainingBtn.textContent = showTraining ? '⚙️ Hide training' : '⚙️ Show training';
-  render();
-});
+if (toggleTrainingBtn) {
+  toggleTrainingBtn.addEventListener('click', () => {
+    showTraining = !showTraining;
+    toggleTrainingBtn.classList.toggle('active', showTraining);
+    toggleTrainingBtn.textContent = showTraining ? '⚙️ Hide training' : '⚙️ Show training';
+    render();
+  });
+}
 
 // --- skill filters ---
 const legend = document.getElementById('legend');
