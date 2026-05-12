@@ -237,6 +237,25 @@
     border: 1px solid rgba(88,166,255,.6);
     z-index: 2;
   }
+  .skill-band {
+    position: absolute;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, rgba(168,85,247,.45), rgba(168,85,247,.7));
+    border: 1px solid rgba(168,85,247,.7);
+    z-index: 2;
+  }
+  .skill-band-label {
+    position: absolute;
+    color: #c4a7ef;
+    font-size: 0.72em;
+    white-space: nowrap;
+    padding: 1px 6px;
+    background: rgba(20, 14, 32, 0.85);
+    border: 1px solid rgba(168,85,247,.5);
+    border-radius: 4px;
+    z-index: 3;
+  }
   .life-band-label {
     position: absolute;
     color: var(--accent);
@@ -636,6 +655,10 @@ const lifeBands = [
   // { start: '2000-01', end: '2015-12', label: 'Lived in Southampton', icon: '📍' }
 ];
 
+const skillBands = [
+  { start: '2002-06', end: null, label: '.NET / C#', icon: '⚡' }
+];
+
 const projects = [
   {
     parent: 'milliman',
@@ -826,6 +849,7 @@ function render() {
   // role bars (above the axis now)
   const ROLE_BAR_Y = AXIS_Y - 38;
   const PROJECT_BAR_Y = ROLE_BAR_Y - 22;
+  const SKILL_BAR_Y = PROJECT_BAR_Y - 14;
   const sortedRoles = [...roles].sort((a,b) => toDate(a.start) - toDate(b.start));
   const roleBarEls = [];
   sortedRoles.forEach(r => {
@@ -860,6 +884,30 @@ function render() {
     timeline.appendChild(bar);
     occAbove.push(elBox(bar));
     projectEntries.push({ p, left, right, width });
+  });
+
+  // skill bands (sit just above project bars, with their own label)
+  skillBands.forEach(s => {
+    const left = xPx(toDate(s.start));
+    const right = xPx(s.end ? toDate(s.end) : maxDate);
+    const width = Math.max(8, right - left - 2);
+    const bar = document.createElement('div');
+    bar.className = 'skill-band';
+    bar.style.left = (left + 1) + 'px';
+    bar.style.width = width + 'px';
+    bar.style.top = SKILL_BAR_Y + 'px';
+    bar.title = `${s.label} · ${durationLabel(s.start, s.end)}`;
+    timeline.appendChild(bar);
+    occAbove.push(elBox(bar));
+
+    const lbl = document.createElement('div');
+    lbl.className = 'skill-band-label';
+    lbl.textContent = `${s.icon || ''} ${s.label} · ${durationLabel(s.start, s.end)}`;
+    lbl.style.left = (left + width / 2) + 'px';
+    lbl.style.top = (SKILL_BAR_Y - 4) + 'px';
+    lbl.style.transform = 'translate(-50%, -100%)';
+    timeline.appendChild(lbl);
+    pushAway(lbl, occAbove, 'up');
   });
 
   // milestone dots (fixed on axis)
