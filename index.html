@@ -849,7 +849,6 @@ function render() {
   // role bars (above the axis now)
   const ROLE_BAR_Y = AXIS_Y - 38;
   const PROJECT_BAR_Y = ROLE_BAR_Y - 22;
-  const SKILL_BAR_Y = PROJECT_BAR_Y - 14;
   const sortedRoles = [...roles].sort((a,b) => toDate(a.start) - toDate(b.start));
   const roleBarEls = [];
   sortedRoles.forEach(r => {
@@ -886,7 +885,8 @@ function render() {
     projectEntries.push({ p, left, right, width });
   });
 
-  // skill bands (sit just above project bars, with their own label)
+  // skill bands (placed BELOW the axis, under the year ticks)
+  const SKILL_BAR_BELOW_Y = AXIS_Y + 38; // below year tick row
   skillBands.forEach(s => {
     const left = xPx(toDate(s.start));
     const right = xPx(s.end ? toDate(s.end) : maxDate);
@@ -895,19 +895,19 @@ function render() {
     bar.className = 'skill-band';
     bar.style.left = (left + 1) + 'px';
     bar.style.width = width + 'px';
-    bar.style.top = SKILL_BAR_Y + 'px';
+    bar.style.top = SKILL_BAR_BELOW_Y + 'px';
     bar.title = `${s.label} · ${durationLabel(s.start, s.end)}`;
     timeline.appendChild(bar);
-    occAbove.push(elBox(bar));
+    occBelow.push(elBox(bar));
 
     const lbl = document.createElement('div');
     lbl.className = 'skill-band-label';
     lbl.textContent = `${s.icon || ''} ${s.label} · ${durationLabel(s.start, s.end)}`;
     lbl.style.left = (left + width / 2) + 'px';
-    lbl.style.top = (SKILL_BAR_Y - 4) + 'px';
-    lbl.style.transform = 'translate(-50%, -100%)';
+    lbl.style.top = (SKILL_BAR_BELOW_Y + 14) + 'px';
+    lbl.style.transform = 'translateX(-50%)';
     timeline.appendChild(lbl);
-    pushAway(lbl, occAbove, 'up');
+    pushAway(lbl, occBelow, 'down');
   });
 
   // milestone dots (fixed on axis)
@@ -987,21 +987,19 @@ function render() {
     timeline.appendChild(pin);
   });
 
-  // role cards — placed ABOVE their role bar (jobs are now on top), centered
-  // horizontally, alternating between just 2 row slots.
+  // role cards — try a single row first (when there's enough horizontal space);
+  // fall back to 2 rows if any card can't fit on row 0.
   const CARD_W = 160;
   const CARD_H = 120;
   const ROW1_TOP = ROLE_BAR_Y - CARD_H - 10;      // closest to the bar
   const ROW2_TOP = ROW1_TOP - CARD_H - 12;        // further above
-  const rowOccupants = [[], []];
   const GAP = 8;
   const minLeft = LEFT_PAD;
   const maxLeft = totalWidth - CARD_W - LEFT_PAD;
   // For a given row and desired left, find the nearest left that doesn't overlap.
   // Returns { left, dist } or null if no space exists in [minLeft, maxLeft].
-  const findSpot = (row, desiredLeft) => {
-    const occ = [...rowOccupants[row]].sort((a,b) => a[0] - b[0]);
-    // Build free intervals
+  const findSpot = (occupants, desiredLeft) => {
+    const occ = [...occupants].sort((a,b) => a[0] - b[0]);
     const free = [];
     let cursor = minLeft;
     occ.forEach(([l, rg]) => {
@@ -1021,22 +1019,45 @@ function render() {
     return best;
   };
   const sortedByStart = [...roleBarEls].sort((a,b) => a.left - b.left);
-  sortedByStart.forEach(({ r, left, right }) => {
+  // Pre-compute desired left for each card
+  const desiredLefts = sortedByStart.map(({ left, right }) => {
     const center = (left + right) / 2;
-    const desired = Math.max(minLeft, Math.min(center - CARD_W / 2, maxLeft));
-    const s0 = findSpot(0, desired);
-    const s1 = findSpot(1, desired);
-    let row, cardLeft;
-    if (s0 && (!s1 || s0.dist <= s1.dist)) { row = 0; cardLeft = s0.left; }
-    else if (s1) { row = 1; cardLeft = s1.left; }
-    else { row = 1; cardLeft = desired; } // last-resort fallback
-    const cardRight = cardLeft + CARD_W;
-    rowOccupants[row].push([cardLeft, cardRight]);
+    return Math.max(minLeft, Math.min(center - CARD_W / 2, maxLeft));
+  });
+  // Attempt to lay out across `numRows` rows. Returns placements or null if
+  // any card can't be placed without overlapping. (Cards still try to stay
+  // close to their bar centre — but the only constraint is non-overlap.)
+  const layout = (numRows) => {
+    const rowOccupants = Array.from({ length: numRows }, () => []);
+    const placements = [];
+    for (let i = 0; i < sortedByStart.length; i++) {
+      const desired = desiredLefts[i];
+      let best = null;
+      for (let row = 0; row < numRows; row++) {
+        const s = findSpot(rowOccupants[row], desired);
+        if (s && (!best || s.dist < best.dist)) best = { ...s, row };
+      }
+      if (!best) return null;
+      rowOccupants[best.row].push([best.left, best.left + CARD_W]);
+      placements.push({ row: best.row, left: best.left });
+    }
+    return placements;
+  };
+  let placements = layout(1) || layout(2);
+  if (!placements) {
+    // Worst case: force-place on row 1 (will overlap, but better than crashing).
+    placements = sortedByStart.map((_, i) => ({ row: 1, left: desiredLefts[i] }));
+  }
+  const singleRow = placements.every(p => p.row === 0);
+  sortedByStart.forEach(({ r }, i) => {
+    const { row, left: cardLeft } = placements[i];
     const card = document.createElement('div');
     card.className = 'role-card';
     card.dataset.id = r.id;
     card.style.left = cardLeft + 'px';
-    card.style.top = (row === 0 ? ROW1_TOP : ROW2_TOP) + 'px';
+    // When everything fits on one row, anchor it close to the bar; otherwise
+    // alternate between the two row slots.
+    card.style.top = (singleRow ? ROW1_TOP : (row === 0 ? ROW1_TOP : ROW2_TOP)) + 'px';
     const contractBadge = r.contract ? `<span class="contract-badge">Contract</span>` : '';
     card.innerHTML = `
       <div class="head">
