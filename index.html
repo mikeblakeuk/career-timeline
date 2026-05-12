@@ -1049,10 +1049,13 @@ function render() {
     const placements = [];
     for (let i = 0; i < sortedByStart.length; i++) {
       const desired = desiredLefts[i];
+      // Prefer the lowest row that has ANY free spot — cards can move
+      // horizontally as far as needed to stay on the lower row before we
+      // escalate to the next row.
       let best = null;
       for (let row = 0; row < numRows; row++) {
         const s = findSpot(rowOccupants[row], desired);
-        if (s && (!best || s.dist < best.dist)) best = { ...s, row };
+        if (s) { best = { ...s, row }; break; }
       }
       if (!best) return null;
       rowOccupants[best.row].push([best.left, best.left + CARD_W]);
