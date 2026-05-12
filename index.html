@@ -352,16 +352,15 @@
   }
   .modal h4 { margin: 16px 0 6px 0; font-size: 0.85em; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 600; }
 
-  /* connector line from card to bar */
-  .role-card::before {
-    content: "";
+  /* connector lines from each card to its bar — drawn as three positioned segments */
+  .card-connector {
     position: absolute;
-    left: 20px;
-    bottom: -14px;
-    width: 2px;
-    height: 14px;
     background: var(--line);
+    z-index: 1;
+    pointer-events: none;
   }
+  .card-connector.h { height: 1.5px; }
+  .card-connector.v { width: 1.5px; }
 
   /* color classes */
   .c-milliman, .c-1touch, .c-rbs, .c-benefex,
@@ -1069,15 +1068,14 @@ function render() {
     placements = sortedByStart.map((_, i) => ({ row: 1, left: desiredLefts[i] }));
   }
   const singleRow = placements.every(p => p.row === 0);
-  sortedByStart.forEach(({ r }, i) => {
+  sortedByStart.forEach(({ r, left: barLeft, right: barRight }, i) => {
     const { row, left: cardLeft } = placements[i];
+    const cardTop = singleRow ? ROW1_TOP : (row === 0 ? ROW1_TOP : ROW2_TOP);
     const card = document.createElement('div');
     card.className = 'role-card';
     card.dataset.id = r.id;
     card.style.left = cardLeft + 'px';
-    // When everything fits on one row, anchor it close to the bar; otherwise
-    // alternate between the two row slots.
-    card.style.top = (singleRow ? ROW1_TOP : (row === 0 ? ROW1_TOP : ROW2_TOP)) + 'px';
+    card.style.top = cardTop + 'px';
     const contractBadge = r.contract ? `<span class="contract-badge">Contract</span>` : '';
     card.innerHTML = `
       <div class="head">
@@ -1092,6 +1090,35 @@ function render() {
     card.addEventListener('click', () => scrollToCard('role-' + r.id));
     timeline.appendChild(card);
     occAbove.push(elBox(card));
+
+    // Z-shape connector: card bottom → mid Y → bar centre → bar top.
+    const barCenterX = (barLeft + barRight) / 2;
+    const cardCenterX = cardLeft + CARD_W / 2;
+    // Clamp the connector's horizontal anchor on the card so it sits within
+    // the card's actual width (looks cleaner when card is far from the bar).
+    const cardAnchorX = Math.max(cardLeft + 12, Math.min(cardCenterX, cardLeft + CARD_W - 12));
+    const cardBottom = cardTop + CARD_H;
+    const barTop = ROLE_BAR_Y;
+    const midY = Math.round((cardBottom + barTop) / 2);
+
+    const seg = (cls, left, top, w, h) => {
+      const s = document.createElement('div');
+      s.className = 'card-connector ' + cls;
+      s.style.left = left + 'px';
+      s.style.top = top + 'px';
+      if (w != null) s.style.width = w + 'px';
+      if (h != null) s.style.height = h + 'px';
+      timeline.appendChild(s);
+    };
+    // vertical from card bottom down to midY (under the card)
+    seg('v', cardAnchorX, cardBottom, null, Math.max(0, midY - cardBottom));
+    // horizontal from card anchor x across to bar centre x at midY
+    const hLeft = Math.min(cardAnchorX, barCenterX);
+    const hRight = Math.max(cardAnchorX, barCenterX);
+    seg('h', hLeft, midY, hRight - hLeft, null);
+    // vertical from midY down to top of the bar
+    seg('v', barCenterX, midY, null, Math.max(0, barTop - midY));
+
     applyRoleColor(r.id, r.logo);
   });
 
