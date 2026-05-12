@@ -1088,7 +1088,6 @@ function render() {
         </div>
       </div>
       <div class="duration">${durationLabel(r.start, r.end)}</div>
-      ${r.clients && r.clients.length ? `<div class="clients">${r.clients.map(c => `<img src="${c.logo}" title="${c.name}" alt="${c.name}" onerror="this.classList.add('missing')">`).join('')}</div>` : ''}
     `;
     card.addEventListener('click', () => scrollToCard('role-' + r.id));
     timeline.appendChild(card);
