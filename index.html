@@ -366,7 +366,7 @@
   /* color classes */
   .c-milliman, .c-1touch, .c-rbs, .c-benefex,
   .c-taylormade, .c-imeta, .c-silversands, .c-solent, .c-iwcollege {
-    background: linear-gradient(90deg, var(--role-2), var(--role));
+    background: var(--role);
   }
 
   /* modal */
@@ -850,6 +850,21 @@ function render() {
   const ROLE_BAR_Y = AXIS_Y - 38;
   const PROJECT_BAR_Y = ROLE_BAR_Y - 22;
   const sortedRoles = [...roles].sort((a,b) => toDate(a.start) - toDate(b.start));
+  // Solid blue scale: light (newest) → dark (oldest). Assigned by start date.
+  const rolesByNewest = [...roles].sort((a,b) => toDate(b.start) - toDate(a.start));
+  const roleColorMap = new Map();
+  const N = rolesByNewest.length;
+  rolesByNewest.forEach((r, i) => {
+    const t = N > 1 ? i / (N - 1) : 0;           // 0 = newest, 1 = oldest
+    const hue = 212;
+    const sat = 90 - t * 20;                      // 90% → 70%
+    const light = 72 - t * 44;                    // 72% → 28%
+    const stripe = Math.max(18, light - 14);
+    roleColorMap.set(r.id, {
+      main: `hsl(${hue}, ${sat}%, ${light}%)`,
+      stripe: `hsl(${hue}, ${sat}%, ${stripe}%)`
+    });
+  });
   const roleBarEls = [];
   sortedRoles.forEach(r => {
     const left = xPx(toDate(r.start));
@@ -860,6 +875,11 @@ function render() {
     bar.style.left = (left + 1) + 'px';
     bar.style.width = width + 'px';
     bar.style.top = ROLE_BAR_Y + 'px';
+    const rc = roleColorMap.get(r.id);
+    if (rc) {
+      bar.style.setProperty('--role', rc.main);
+      bar.style.setProperty('--role-2', rc.stripe);
+    }
     bar.dataset.id = r.id;
     bar.title = `${r.title} · ${r.company} (${durationLabel(r.start, r.end)})`;
     bar.addEventListener('click', () => scrollToCard('role-' + r.id));
