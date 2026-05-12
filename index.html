@@ -653,7 +653,8 @@ const lifeBands = [
 ];
 
 const skillBands = [
-  { start: '2002-06', end: null, label: '.NET / C#', icon: '⚡' }
+  { start: '2002-06', end: null,      label: '.NET / C#', icon: '⚡', color: '#a855f7' },
+  { start: '2015-02', end: '2026-05', label: 'Azure',     icon: '☁️', color: '#3b9eff' }
 ];
 
 const projects = [
@@ -678,6 +679,16 @@ function fmtMonth(s) {
   return toDate(s).toLocaleString('en-GB', { month: 'short', year: 'numeric' });
 }
 function fmtRange(start, end) { return `${fmtMonth(start)} – ${fmtMonth(end)}`; }
+function hexToRgba(hex, alpha = 1) {
+  const m = /^#?([0-9a-f]{6}|[0-9a-f]{3})$/i.exec(hex);
+  if (!m) return hex;
+  let h = m[1];
+  if (h.length === 3) h = h.split('').map(c => c + c).join('');
+  const r = parseInt(h.slice(0,2), 16);
+  const g = parseInt(h.slice(2,4), 16);
+  const b = parseInt(h.slice(4,6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
 function durationLabel(s, e) {
   const sd = toDate(s);
   const ed = e ? toDate(e) : new Date();
@@ -902,17 +913,25 @@ function render() {
     projectEntries.push({ p, left, right, width });
   });
 
-  // skill bands (placed BELOW the axis, under the year ticks)
-  const SKILL_BAR_BELOW_Y = AXIS_Y + 38; // below year tick row
-  skillBands.forEach(s => {
+  // skill bands (placed BELOW the axis, under the year ticks). Each band gets
+  // its own row so multiple skills can be shown without overlapping.
+  const SKILL_BAR_BELOW_Y = AXIS_Y + 38;
+  const SKILL_ROW_H = 30; // band + label row
+  skillBands.forEach((s, i) => {
     const left = xPx(toDate(s.start));
     const right = xPx(s.end ? toDate(s.end) : maxDate);
     const width = Math.max(8, right - left - 2);
+    const rowTop = SKILL_BAR_BELOW_Y + i * SKILL_ROW_H;
     const bar = document.createElement('div');
     bar.className = 'skill-band';
     bar.style.left = (left + 1) + 'px';
     bar.style.width = width + 'px';
-    bar.style.top = SKILL_BAR_BELOW_Y + 'px';
+    bar.style.top = rowTop + 'px';
+    if (s.color) {
+      // Build a gradient + border that match the band's accent colour.
+      bar.style.background = `linear-gradient(90deg, ${hexToRgba(s.color, 0.45)}, ${hexToRgba(s.color, 0.7)})`;
+      bar.style.borderColor = hexToRgba(s.color, 0.7);
+    }
     bar.title = `${s.label} · ${durationLabel(s.start, s.end)}`;
     timeline.appendChild(bar);
     occBelow.push(elBox(bar));
@@ -921,8 +940,12 @@ function render() {
     lbl.className = 'skill-band-label';
     lbl.textContent = `${s.icon || ''} ${s.label} · ${durationLabel(s.start, s.end)}`;
     lbl.style.left = (left + width / 2) + 'px';
-    lbl.style.top = (SKILL_BAR_BELOW_Y + 14) + 'px';
+    lbl.style.top = (rowTop + 14) + 'px';
     lbl.style.transform = 'translateX(-50%)';
+    if (s.color) {
+      lbl.style.color = s.color;
+      lbl.style.borderColor = hexToRgba(s.color, 0.5);
+    }
     timeline.appendChild(lbl);
     pushAway(lbl, occBelow, 'down');
   });
