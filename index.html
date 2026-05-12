@@ -186,7 +186,7 @@
     padding: 2px 8px;
     border: 1px solid var(--line);
     border-radius: 999px;
-    z-index: 1;
+    z-index: 10;
     white-space: nowrap;
   }
   .year-tick.decade {
@@ -207,6 +207,15 @@
   }
   .role-bar:hover { transform: translateY(1px); box-shadow: 0 4px 12px rgba(0,0,0,.6); }
   .role-bar.dim { opacity: .2; filter: grayscale(.7); }
+  .role-bar.contract { background: repeating-linear-gradient(45deg, var(--role-2) 0 8px, var(--role) 8px 16px); }
+  .contract-badge {
+    display: inline-block; margin-left: 6px;
+    padding: 1px 7px; border-radius: 999px;
+    background: rgba(255,255,255,.15); color: #fff;
+    font-size: 0.62em; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .5px;
+    vertical-align: middle;
+  }
 
   /* project bar = thin secondary stripe just below the parent role */
   .project-bar {
@@ -489,7 +498,8 @@ const roles = [
   {
     id: 'rbs',
     kind: 'role',
-    title: 'Technical Lead',
+    contract: true,
+    title: 'Technical Lead (Contract)',
     company: 'Royal Bank of Scotland',
     location: 'London',
     start: '2011-08', end: '2013-11',
@@ -798,9 +808,9 @@ function render() {
     pushAway(lbl, occAbove, 'up');
   });
 
-  // role bars (fixed Y, reserve space)
-  const ROLE_BAR_Y = AXIS_Y + 20;
-  const PROJECT_BAR_Y = ROLE_BAR_Y + 26;
+  // role bars (above the axis now)
+  const ROLE_BAR_Y = AXIS_Y - 38;
+  const PROJECT_BAR_Y = ROLE_BAR_Y - 22;
   const sortedRoles = [...roles].sort((a,b) => toDate(a.start) - toDate(b.start));
   const roleBarEls = [];
   sortedRoles.forEach(r => {
@@ -808,7 +818,7 @@ function render() {
     const right = xPx(r.end ? toDate(r.end) : maxDate);
     const width = Math.max(8, right - left - 2);
     const bar = document.createElement('div');
-    bar.className = 'role-bar ' + r.cls;
+    bar.className = 'role-bar ' + r.cls + (r.contract ? ' contract' : '');
     bar.style.left = (left + 1) + 'px';
     bar.style.width = width + 'px';
     bar.style.top = ROLE_BAR_Y + 'px';
@@ -816,7 +826,7 @@ function render() {
     bar.title = `${r.title} · ${r.company} (${durationLabel(r.start, r.end)})`;
     bar.addEventListener('click', () => scrollToCard('role-' + r.id));
     timeline.appendChild(bar);
-    occBelow.push(elBox(bar));
+    occAbove.push(elBox(bar));
     roleBarEls.push({ r, left, right, width });
   });
 
@@ -833,7 +843,7 @@ function render() {
     bar.style.top = PROJECT_BAR_Y + 'px';
     bar.title = `${p.title} · ${durationLabel(p.start, p.end)}`;
     timeline.appendChild(bar);
-    occBelow.push(elBox(bar));
+    occAbove.push(elBox(bar));
     projectEntries.push({ p, left, right, width });
   });
 
@@ -862,24 +872,24 @@ function render() {
     milestoneEntries.push({ m, x, mid, typeColor });
   });
 
-  // project labels — push down to avoid year ticks/bars/anything below them
+  // project labels — push UP (projects sit above the axis now)
   projectEntries.forEach(({ p, left, right, width }) => {
     if (width <= 80) return;
     const lbl = document.createElement('div');
     lbl.style.position = 'absolute';
     lbl.style.left = (left + width/2) + 'px';
-    lbl.style.top = (PROJECT_BAR_Y + 16) + 'px';
-    lbl.style.transform = 'translateX(-50%)';
+    lbl.style.top = (PROJECT_BAR_Y - 4) + 'px';
+    lbl.style.transform = 'translate(-50%, -100%)';
     lbl.style.fontSize = '0.72em';
     lbl.style.color = 'var(--muted)';
     lbl.style.whiteSpace = 'nowrap';
     lbl.style.zIndex = '3';
     lbl.textContent = `${p.icon || '🔹'} ${p.title} · ${durationLabel(p.start, p.end)}`;
     timeline.appendChild(lbl);
-    pushAway(lbl, occBelow, 'down');
+    pushAway(lbl, occAbove, 'up');
   });
 
-  // milestone labels — all above the axis so only jobs sit below
+  // milestone labels — BELOW the axis now (jobs are on top)
   const milestoneLabels = [];
   milestoneEntries.forEach(({ m, x, mid, typeColor }) => {
     const lbl = document.createElement('div');
@@ -891,11 +901,11 @@ function render() {
     const logoHtml = m.logo ? `<img src="${m.logo}" style="width:24px;height:24px;border-radius:4px;background:#fff;padding:2px;display:block;margin:0 auto 4px" onerror="this.style.display='none'">` : `<span class="icon">${m.icon}</span>`;
     lbl.innerHTML = `${logoHtml}${m.label}`;
     lbl.style.left = x + 'px';
-    lbl.style.top = (AXIS_Y - 28) + 'px';
-    lbl.style.transform = 'translate(-50%, -100%)';
+    lbl.style.top = (AXIS_Y + 28) + 'px';
+    lbl.style.transform = 'translateX(-50%)';
     timeline.appendChild(lbl);
-    pushAway(lbl, occAbove, 'up');
-    milestoneLabels.push({ lbl, x, above: true });
+    pushAway(lbl, occBelow, 'down');
+    milestoneLabels.push({ lbl, x, above: false });
   });
 
   // pins connecting each milestone dot to its resolved label
@@ -914,20 +924,32 @@ function render() {
     timeline.appendChild(pin);
   });
 
-  // role cards — placed below their role bar; pushed down to avoid all prior below-zone content
+  // role cards — placed ABOVE their role bar (jobs are now on top), centered
+  // horizontally, alternating between just 2 row slots.
   const CARD_W = 160;
-  roleBarEls.forEach(({ r, left, right }) => {
-    const cardLeft = Math.max(LEFT_PAD, Math.min(right - CARD_W, totalWidth - CARD_W - LEFT_PAD));
+  const CARD_H = 120;
+  const ROW1_TOP = ROLE_BAR_Y - CARD_H - 10;      // closest to the bar
+  const ROW2_TOP = ROW1_TOP - CARD_H - 12;        // further above
+  const rowOccupants = [[], []];
+  const sortedByStart = [...roleBarEls].sort((a,b) => a.left - b.left);
+  sortedByStart.forEach(({ r, left, right }) => {
+    const center = (left + right) / 2;
+    let cardLeft = Math.max(LEFT_PAD, Math.min(center - CARD_W / 2, totalWidth - CARD_W - LEFT_PAD));
+    const cardRight = cardLeft + CARD_W;
+    const fits = row => !rowOccupants[row].some(([l,rg]) => !(cardRight + 8 < l || cardLeft > rg + 8));
+    const row = fits(0) ? 0 : 1;
+    rowOccupants[row].push([cardLeft, cardRight]);
     const card = document.createElement('div');
     card.className = 'role-card';
     card.dataset.id = r.id;
     card.style.left = cardLeft + 'px';
-    card.style.top = (ROLE_BAR_Y + 40) + 'px';
+    card.style.top = (row === 0 ? ROW1_TOP : ROW2_TOP) + 'px';
+    const contractBadge = r.contract ? `<span class="contract-badge">Contract</span>` : '';
     card.innerHTML = `
       <div class="head">
         <img class="logo" src="${r.logo || ''}" alt="" onerror="this.classList.add('missing')">
         <div>
-          <div class="company">${r.company}</div>
+          <div class="company">${r.company}${contractBadge}</div>
           <div class="title">${r.title}</div>
         </div>
       </div>
@@ -936,7 +958,7 @@ function render() {
     `;
     card.addEventListener('click', () => scrollToCard('role-' + r.id));
     timeline.appendChild(card);
-    pushAway(card, occBelow, 'down');
+    occAbove.push(elBox(card));
     applyRoleColor(r.id, r.logo);
   });
 
@@ -1013,7 +1035,7 @@ function buildCardList() {
         : '';
       return `<article class="cl-card cl-role ${r.cls || ''}" id="role-${r.id}" ${styleAttr}>
         <header class="cl-head">${logoImg}
-          <div><div class="cl-company">${r.company}</div>
+          <div><div class="cl-company">${r.company}${r.contract ? '<span class="contract-badge">Contract</span>' : ''}</div>
           <div class="cl-title">${r.title}</div></div></header>
         <div class="cl-meta">${fmtRange(r.start, r.end)} · ${durationLabel(r.start, r.end)}</div>
         <ul class="cl-bullets">${bullets}</ul>
