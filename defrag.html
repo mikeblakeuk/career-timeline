@@ -33,8 +33,7 @@
   .grid {
     display: grid;
     grid-template-columns: 36px repeat(52, 1fr);
-    column-gap: 1px;
-    row-gap: 0;
+    gap: 2px;
     width: 100%;
   }
 
@@ -43,9 +42,11 @@
     cursor: pointer;
     transition: transform 0.05s;
     min-width: 0;
+    border: 1px solid rgba(0,0,0,0.4);
+    box-shadow: inset 1px 1px 0 rgba(255,255,255,0.15), inset -1px -1px 0 rgba(0,0,0,0.3);
   }
   .block:hover { transform: scale(1.6); z-index: 10; }
-  .block.gap { background: #111; }
+  .block.gap { background: #1a1a1a; border-color: #000; box-shadow: none; }
   .year-cell {
     font-size: 0.6em;
     color: #444;
