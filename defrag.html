@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mike Blake — Career Defrag</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #000;
+    color: #ccc;
+    font-family: 'Courier New', monospace;
+    padding: 24px;
+    min-height: 100vh;
+  }
+
+  header {
+    margin-bottom: 20px;
+  }
+  h1 {
+    font-size: 1em;
+    color: #fff;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .subhead {
+    font-size: 0.75em;
+    color: #555;
+  }
+
+  /* block grid — 53 cols: year label + 52 weeks */
+  .grid {
+    display: grid;
+    grid-template-columns: 36px repeat(52, 1fr);
+    column-gap: 1px;
+    row-gap: 0;
+    width: 100%;
+  }
+
+  .block {
+    aspect-ratio: 1;
+    cursor: pointer;
+    transition: transform 0.05s;
+    min-width: 0;
+  }
+  .block:hover { transform: scale(1.6); z-index: 10; }
+  .block.gap { background: #111; }
+  .year-cell {
+    font-size: 0.6em;
+    color: #444;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 4px;
+    white-space: nowrap;
+  }
+
+  /* legend */
+  .legend {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72em;
+    color: #888;
+  }
+  .legend-swatch {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+  }
+
+  /* tooltip */
+  #tooltip {
+    position: fixed;
+    background: #111;
+    border: 1px solid #333;
+    color: #eee;
+    font-size: 0.75em;
+    padding: 6px 10px;
+    border-radius: 4px;
+    pointer-events: none;
+    display: none;
+    z-index: 100;
+    white-space: nowrap;
+    line-height: 1.6;
+  }
+
+  /* stats */
+  .stats {
+    margin-top: 16px;
+    font-size: 0.72em;
+    color: #444;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .stats span { color: #666; }
+  .stats b { color: #aaa; }
+
+  .back { 
+    display: inline-block;
+    margin-bottom: 18px;
+    font-size: 0.75em;
+    color: #444;
+    text-decoration: none;
+  }
+  .back:hover { color: #888; }
+</style>
+</head>
+<body>
+
+<a class="back" href="index.html">← timeline</a>
+
+<header>
+  <h1>⬛ Mike Blake — Career Defrag</h1>
+  <div class="subhead">Each block = 1 week &nbsp;·&nbsp; hover for details</div>
+</header>
+
+<div class="grid" id="grid"></div>
+
+<div class="legend" id="legend"></div>
+<div class="stats" id="stats"></div>
+<div id="tooltip"></div>
+
+<script>
+// ── roles ────────────────────────────────────────────────────────────────────
+
+const roles = [
+  { id: 'iwcollege',  label: 'Isle of Wight College',       start: '1997-09', end: '1999-09', color: '#4a4a6a' },
+  { id: 'solent',     label: 'Southampton Institute (BSc)',  start: '1999-09', end: '2002-06', color: '#5a4a7a' },
+  { id: 'silversands',label: 'Silversands',                  start: '2003-02', end: '2005-05', color: '#c084fc' },
+  { id: 'imeta',      label: 'IMETA Technologies',           start: '2005-05', end: '2010-05', color: '#818cf8' },
+  { id: 'taylormade', label: 'Taylor Made',                  start: '2010-05', end: '2010-10', color: '#facc15' },
+  { id: 'benefex',    label: 'Benefex',                      start: '2010-10', end: '2011-08', color: '#34d399' },
+  { id: 'rbs',        label: 'Royal Bank of Scotland',       start: '2011-08', end: '2013-11', color: '#f87171' },
+  { id: '1touch',     label: '1st Touch',                    start: '2014-03', end: '2015-02', color: '#fb923c' },
+  { id: 'milliman',   label: 'Milliman UK',                  start: '2015-02', end: null,      color: '#38bdf8' },
+];
+
+// ── helpers ──────────────────────────────────────────────────────────────────
+
+function toDate(s) {
+  if (!s) return new Date();
+  const [y, m] = s.split('-').map(Number);
+  return new Date(y, m - 1, 1);
+}
+
+function addWeeks(d, n) {
+  const r = new Date(d);
+  r.setDate(r.getDate() + n * 7);
+  return r;
+}
+
+function fmt(d) {
+  return d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+}
+
+function getRoleForDate(d) {
+  for (const r of roles) {
+    const s = toDate(r.start);
+    const e = r.end ? toDate(r.end) : new Date();
+    if (d >= s && d < e) return r;
+  }
+  return null;
+}
+
+// ── build grid ───────────────────────────────────────────────────────────────
+
+const START = new Date(1997, 0, 1); // 1 Jan 1997
+const END   = new Date();
+END.setDate(1);
+
+const WEEKS_PER_ROW = 52;
+
+// build weeks array
+const weeks = [];
+let cur = new Date(START);
+while (cur <= END) {
+  weeks.push(new Date(cur));
+  cur = addWeeks(cur, 1);
+}
+
+// pad to fill rows
+const remainder = weeks.length % WEEKS_PER_ROW;
+const totalBlocks = remainder ? weeks.length + (WEEKS_PER_ROW - remainder) : weeks.length;
+
+// blocks — inject year label as first cell of each row
+const grid = document.getElementById('grid');
+const tooltip = document.getElementById('tooltip');
+
+const roleCounts = {};
+let gapWeeks = 0;
+
+for (let i = 0; i < totalBlocks; i++) {
+  // first cell of each row = year label
+  if (i % WEEKS_PER_ROW === 0) {
+    const weekIndex = i;
+    const d = weekIndex < weeks.length ? weeks[weekIndex] : null;
+    const lbl = document.createElement('div');
+    lbl.className = 'year-cell';
+    lbl.textContent = d ? d.getFullYear() : '';
+    grid.appendChild(lbl);
+  }
+  const block = document.createElement('div');
+  block.className = 'block';
+
+  if (i < weeks.length) {
+    const w = weeks[i];
+    const role = getRoleForDate(w);
+    if (role) {
+      block.style.background = role.color;
+      block.dataset.role = role.label;
+      block.dataset.date = fmt(w);
+      roleCounts[role.id] = (roleCounts[role.id] || 0) + 1;
+
+      block.addEventListener('mouseenter', e => {
+        tooltip.style.display = 'block';
+        tooltip.innerHTML = `<b>${role.label}</b><br>${fmt(w)}`;
+      });
+      block.addEventListener('mousemove', e => {
+        tooltip.style.left = (e.clientX + 14) + 'px';
+        tooltip.style.top  = (e.clientY - 10) + 'px';
+      });
+      block.addEventListener('mouseleave', () => {
+        tooltip.style.display = 'none';
+      });
+    } else {
+      block.classList.add('gap');
+      gapWeeks++;
+      block.addEventListener('mouseenter', e => {
+        tooltip.style.display = 'block';
+        tooltip.innerHTML = `<b>Career gap</b><br>${fmt(w)}`;
+      });
+      block.addEventListener('mousemove', e => {
+        tooltip.style.left = (e.clientX + 14) + 'px';
+        tooltip.style.top  = (e.clientY - 10) + 'px';
+      });
+      block.addEventListener('mouseleave', () => {
+        tooltip.style.display = 'none';
+      });
+    }
+  } else {
+    // padding
+    block.style.background = 'transparent';
+  }
+
+  grid.appendChild(block);
+}
+
+// ── legend ───────────────────────────────────────────────────────────────────
+
+const legend = document.getElementById('legend');
+roles.forEach(r => {
+  if (!roleCounts[r.id]) return;
+  const item = document.createElement('div');
+  item.className = 'legend-item';
+  const swatch = document.createElement('div');
+  swatch.className = 'legend-swatch';
+  swatch.style.background = r.color;
+  item.appendChild(swatch);
+  const weeks = roleCounts[r.id];
+  const years = (weeks / 52).toFixed(1);
+  item.appendChild(document.createTextNode(`${r.label} — ${years} yrs`));
+  legend.appendChild(item);
+});
+
+// ── stats ─────────────────────────────────────────────────────────────────────
+
+const totalWorked = Object.values(roleCounts).reduce((a, b) => a + b, 0);
+const totalYears = (weeks.length / 52).toFixed(1);
+const workedYears = (totalWorked / 52).toFixed(1);
+
+const stats = document.getElementById('stats');
+stats.innerHTML = `
+  <div>Total span: <b>${totalYears} yrs</b></div>
+  <div>Weeks worked: <b>${totalWorked}</b></div>
+  <div>Gap weeks: <b>${gapWeeks}</b></div>
+  <div>Total blocks: <b>${weeks.length}</b></div>
+`;
+</script>
+</body>
+</html>
