@@ -175,8 +175,7 @@ function getRoleForDate(d) {
 // ── build grid ───────────────────────────────────────────────────────────────
 
 const START = new Date(1997, 0, 1); // 1 Jan 1997
-const _now  = new Date();
-const END   = new Date(_now.getFullYear(), _now.getMonth() + 1, 1); // first day of next month
+const END   = new Date(2028, 11, 31); // show through end of 2028
 
 const WEEKS_PER_ROW = 52;
 

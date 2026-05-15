@@ -718,8 +718,7 @@ function durationLabel(s, e) {
 
 // --- horizontal scale (fit to viewport width) ---
 const minDate = toDate('1997-01');
-const maxDate = new Date();
-maxDate.setDate(1);
+const maxDate = new Date(2028, 11, 31);
 const LEFT_PAD = 30, RIGHT_PAD = 30;
 const monthsBetween = (a, b) => (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth());
 const totalMonths = monthsBetween(minDate, maxDate);
