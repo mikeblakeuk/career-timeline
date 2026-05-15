@@ -367,6 +367,10 @@
   .c-taylormade, .c-imeta, .c-silversands, .c-solent, .c-iwcollege {
     background: var(--role);
   }
+  .c-powerbi {
+    background: linear-gradient(90deg, rgba(242,200,17,.45), rgba(242,200,17,.7));
+    border-color: rgba(242,200,17,.7) !important;
+  }
 
   /* modal */
   .modal-bg {
@@ -644,6 +648,7 @@ const milestones = [
   { date: '2006-03', label: 'Exam 316 — Windows Apps with C# .NET', icon: '📜', isExam: true },
   { date: '2004-09', label: 'Exams 305, 310 and 229 — VB.NET Web Apps, XML Web Services & SQL Server 2000', icon: '📜', isExam: true },
   // Other milestones
+  { date: '2024-03', label: 'FabCon — Las Vegas', icon: '📍' },
   { date: '2009-06', label: 'ISEB Foundation Certificate in Software Testing', icon: '📜', isExam: true },
   { date: '2002-06', label: 'BSc (Hons) Software Engineering', icon: '🎓', logo: 'https://www.google.com/s2/favicons?sz=128&domain=solent.ac.uk' }
 ];
@@ -658,6 +663,14 @@ const skillBands = [
 ];
 
 const projects = [
+  {
+    parent: 'milliman',
+    title: 'Power BI',
+    start: '2022-01', end: '2025-01',
+    cls: 'c-powerbi',
+    icon: '📊',
+    desc: 'Building and maintaining Power BI reports and dashboards for actuarial and business intelligence workloads.'
+  },
   {
     parent: 'milliman',
     title: 'Microsoft Fabric',
@@ -897,20 +910,22 @@ function render() {
   });
 
   // project bars
+  const PROJECT_ROW_H = 14;
   const projectEntries = [];
-  projects.forEach(p => {
+  projects.forEach((p, i) => {
     const left = xPx(toDate(p.start));
     const right = xPx(p.end ? toDate(p.end) : maxDate);
     const width = Math.max(8, right - left - 2);
+    const rowY = PROJECT_BAR_Y - i * PROJECT_ROW_H;
     const bar = document.createElement('div');
     bar.className = 'project-bar ' + (p.cls || '');
     bar.style.left = (left + 1) + 'px';
     bar.style.width = width + 'px';
-    bar.style.top = PROJECT_BAR_Y + 'px';
+    bar.style.top = rowY + 'px';
     bar.title = `${p.title} · ${durationLabel(p.start, p.end)}`;
     timeline.appendChild(bar);
     occAbove.push(elBox(bar));
-    projectEntries.push({ p, left, right, width });
+    projectEntries.push({ p, left, right, width, rowY });
   });
 
   // skill bands (placed BELOW the axis, under the year ticks). Each band gets
@@ -976,12 +991,12 @@ function render() {
   });
 
   // project labels — push UP (projects sit above the axis now)
-  projectEntries.forEach(({ p, left, right, width }) => {
+  projectEntries.forEach(({ p, left, right, width, rowY }) => {
     if (width <= 80) return;
     const lbl = document.createElement('div');
     lbl.style.position = 'absolute';
     lbl.style.left = (left + width/2) + 'px';
-    lbl.style.top = (PROJECT_BAR_Y - 4) + 'px';
+    lbl.style.top = (rowY - 4) + 'px';
     lbl.style.transform = 'translate(-50%, -100%)';
     lbl.style.fontSize = '0.72em';
     lbl.style.color = 'var(--muted)';
