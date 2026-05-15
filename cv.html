@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mike Blake — CV</title>
+<style>
+  :root {
+    --bg: #0e1116;
+    --panel: #161b22;
+    --panel-2: #1f2630;
+    --accent: #58a6ff;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --line: #30363d;
+    --dot: #58a6ff;
+    --timeline-line: #30363d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    font-size: 14px;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+
+  /* ── page wrapper ── */
+  .page {
+    max-width: 860px;
+    margin: 40px auto;
+    padding: 0 24px 60px;
+  }
+
+  /* ── header ── */
+  .cv-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 36px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--line);
+  }
+  .cv-header h1 {
+    font-size: 2em;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .cv-header .subtitle {
+    font-size: 1.05em;
+    color: var(--accent);
+    margin-top: 2px;
+  }
+  .cv-header .meta {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 0.88em;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .cv-header .links {
+    text-align: right;
+    font-size: 0.88em;
+    color: var(--muted);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    white-space: nowrap;
+    padding-top: 4px;
+  }
+  .cv-header .links a { color: var(--accent); }
+
+  /* ── section heading ── */
+  .section-heading {
+    font-size: 0.72em;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  /* ── skills ── */
+  .skills-section { margin-bottom: 36px; }
+  .skills-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .skill-pill {
+    font-size: 0.82em;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--text);
+  }
+  .skill-pill.highlight {
+    border-color: rgba(88,166,255,.5);
+    color: var(--accent);
+    background: rgba(88,166,255,.08);
+  }
+
+  /* ── timeline ── */
+  .timeline-section { margin-bottom: 36px; }
+
+  .tl-entries {
+    position: relative;
+    padding-left: 120px; /* date column width */
+  }
+
+  /* the vertical line */
+  .tl-entries::before {
+    content: '';
+    position: absolute;
+    left: 108px;
+    top: 6px;
+    bottom: 0;
+    width: 2px;
+    background: var(--timeline-line);
+  }
+
+  .tl-entry {
+    position: relative;
+    margin-bottom: 32px;
+  }
+  .tl-entry:last-child { margin-bottom: 0; }
+
+  /* date label sits in the left gutter */
+  .tl-date {
+    position: absolute;
+    right: calc(100% + 14px); /* relative to the padded container = sits left of the line */
+    top: 2px;
+    width: 94px;
+    text-align: right;
+    font-size: 0.78em;
+    color: var(--muted);
+    line-height: 1.35;
+  }
+
+  /* dot on the line */
+  .tl-dot {
+    position: absolute;
+    left: -18px; /* 120 - 108 + adjustment = sits on the line */
+    top: 5px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--dot);
+    border: 2px solid var(--bg);
+    z-index: 1;
+  }
+  .tl-dot.contract {
+    background: transparent;
+    border-color: var(--dot);
+  }
+
+  /* entry content */
+  .tl-content {}
+
+  .tl-title-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 6px;
+  }
+  .tl-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    object-fit: contain;
+    flex-shrink: 0;
+    background: var(--panel-2);
+    padding: 6px;
+    border: 1px solid var(--line);
+  }
+  .tl-title {
+    font-weight: 600;
+    font-size: 0.97em;
+    color: var(--text);
+  }
+  .tl-contract-badge {
+    font-size: 0.68em;
+    padding: 1px 7px;
+    border-radius: 999px;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+  }
+  .tl-company {
+    font-size: 0.88em;
+    color: var(--accent);
+    margin-bottom: 1px;
+  }
+  .tl-location {
+    font-size: 0.78em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .tl-bullets {
+    padding-left: 16px;
+    margin-bottom: 8px;
+  }
+  .tl-bullets li {
+    font-size: 0.88em;
+    color: var(--text);
+    margin-bottom: 4px;
+    opacity: 0.9;
+  }
+  .tl-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 6px;
+  }
+  .tl-tag {
+    font-size: 0.72em;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--muted);
+  }
+
+  /* ── clients ── */
+  .tl-clients {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .tl-clients-label {
+    font-size: 0.72em;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-right: 2px;
+  }
+  .tl-client {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8em;
+    color: var(--muted);
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 2px 10px 2px 4px;
+  }
+  .tl-client img {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    object-fit: contain;
+  }
+
+  /* ── certs ── */
+  .certs-section { margin-bottom: 36px; }
+  .cert-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .cert-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.88em;
+  }
+  .cert-date {
+    width: 72px;
+    flex-shrink: 0;
+    color: var(--muted);
+    font-size: 0.9em;
+  }
+  .cert-label { color: var(--text); }
+
+  /* ── nav link back ── */
+  .back-link {
+    display: inline-block;
+    margin-bottom: 28px;
+    font-size: 0.82em;
+    color: var(--muted);
+  }
+  .back-link:hover { color: var(--accent); }
+
+  /* ── print styles ── */
+  @media print {
+    :root {
+      --bg: #fff;
+      --panel: #f6f8fa;
+      --panel-2: #f0f2f5;
+      --accent: #0969da;
+      --text: #1f2328;
+      --muted: #656d76;
+      --line: #d0d7de;
+      --dot: #0969da;
+      --timeline-line: #d0d7de;
+    }
+    body { background: #fff; }
+    .back-link { display: none; }
+    .page { margin: 0; padding: 20px 32px 32px; max-width: none; }
+    .tl-entry { page-break-inside: avoid; }
+  }
+
+  @media (max-width: 600px) {
+    .tl-entries { padding-left: 90px; }
+    .tl-entries::before { left: 78px; }
+    .tl-date { width: 68px; font-size: 0.72em; }
+    .cv-header { flex-direction: column; }
+    .cv-header .links { text-align: left; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <a class="back-link" href="index.html">← Back to timeline</a>
+
+  <header class="cv-header">
+    <div>
+      <h1>Mike Blake</h1>
+      <div class="subtitle">Senior Software Developer</div>
+      <div class="meta">
+        <span>Southampton, UK</span>
+      </div>
+    </div>
+    <div class="links">
+      <a href="index.html">Interactive Timeline</a>
+      <a href="https://github.com/mikeblakeuk" target="_blank">github.com/mikeblakeuk</a>
+    </div>
+  </header>
+
+  <!-- Skills -->
+  <section class="skills-section">
+    <div class="section-heading">Skills &amp; Technologies</div>
+    <div class="skills-grid" id="skillsGrid"></div>
+  </section>
+
+  <!-- Experience -->
+  <section class="timeline-section">
+    <div class="section-heading">Experience</div>
+    <div class="tl-entries" id="experienceList"></div>
+  </section>
+
+  <!-- Education -->
+  <section class="timeline-section">
+    <div class="section-heading">Education</div>
+    <div class="tl-entries" id="educationList"></div>
+  </section>
+
+  <!-- Certifications -->
+  <section class="certs-section">
+    <div class="section-heading">Certifications &amp; Exams</div>
+    <div class="cert-list" id="certList"></div>
+  </section>
+
+</div>
+
+<script>
+// ── data (mirrored from index.html) ──────────────────────────────────────────
+
+const roles = [
+  {
+    id: 'milliman',
+    kind: 'role',
+    title: 'Senior Software Developer',
+    company: 'Milliman UK',
+    location: 'Southampton',
+    start: '2015-02', end: null,
+    logo: 'https://www.google.com/s2/favicons?sz=128&domain=milliman.com',
+    tags: ['C#', '.NET', 'Angular', 'Event Sourcing', 'Azure Batch', 'Azure Storage', 'Power BI', 'SQL Server', 'Kubernetes', 'Microsoft Fabric'],
+    clients: [
+      { name: 'Royal London', logo: 'https://www.google.com/s2/favicons?sz=128&domain=royallondon.com' },
+      { name: 'Standard Life', logo: 'https://www.google.com/s2/favicons?sz=128&domain=standardlife.co.uk' }
+    ],
+    bullets: [
+      'Core .NET developer for a custom ETL product built on an Event Source framework for robust, traceable, scalable messaging.',
+      'Implements features in C# and Angular so actuaries can run models at scale on Azure Batch.',
+      'Proactively automates deployments and manages releases in a timely, effective way.',
+      'Collaborated with Microsoft in Seattle to embed reporting capabilities within Integrate.',
+      'Drove adoption of new / preview technologies — Azure Storage, Power BI, SQL Server, Kubernetes and Fabric.',
+      'Drove improvements with simple yet robust solutions to hard problems, always with the end user in mind.'
+    ]
+  },
+  {
+    id: '1touch',
+    kind: 'role',
+    title: 'Product Consultant',
+    company: '1st Touch',
+    location: 'Southampton',
+    start: '2014-03', end: '2015-02',
+    logo: 'https://www.google.com/s2/favicons?sz=128&domain=aareon.com',
+    tags: ['C#', 'Mobile Forms Engine', 'UAT', 'CI/CD', 'Unit Tests', 'ReSharper'],
+    bullets: [
+      'Worked closely with clients through UAT to ensure the product met their requirements.',
+      'Authored C# workflow components on a custom mobile forms engine.',
+      'Introduced CI/CD, unit & integration tests and ReSharper — removing manual, error-prone steps.'
+    ]
+  },
+  {
+    id: 'rbs',
+    kind: 'role',
+    contract: true,
+    title: 'Technical Lead',
+    company: 'Royal Bank of Scotland',
+    location: 'London',
+    start: '2011-08', end: '2013-11',
+    logo: 'https://www.google.com/s2/favicons?sz=128&domain=rbs.com',
+    tags: ['.NET', 'JIRA', 'SVN', 'TeamCity', 'NUnit', 'Agile'],
+    clients: [
+      { name: 'NatWest', logo: 'https://www.google.com/s2/favicons?sz=128&domain=natwest.com' },
+      { name: "Moody's", logo: 'https://www.google.com/s2/favicons?sz=128&domain=moodys.com' }
+    ],
+    bullets: [
+      'Led the London software team of the Strategic Document Solution managing Agreement data, co-ordinating with developers in India.',
+      'Adeptly transitioned the team from Waterfall to Agile (TeamCity / NUnit).',
+      'Troubleshot production-only issues caused by reflection and native image generation.'
+    ]
+  },
+  {
+    id: 'benefex',
+    kind: 'role',
+    title: 'Senior Software Developer',
+    company: 'Benefex',
+    location: 'Southampton',
+    start: '2010-10', end: '2011-08',
+    logo: 'https://www.google.com/s2/favicons?sz=128&domain=hellobenefex.com',
+    tags: ['ASP.NET MVC 3', 'jQuery', 'C#', 'NServiceBus', 'SQL Server', 'Selenium'],
+    clients: [
+      { name: 'Coca-Cola', logo: 'https://www.google.com/s2/favicons?sz=128&domain=coca-cola.com' }
+    ],
+    bullets: [
+      'Worked across the full Benefex architecture: ASP.NET MVC 3, jQuery front end and a dynamically compiled C# rule engine.',
+      'Used NServiceBus with MSMQ to manage messaging onto SQL 2008 via stored procedures and LINQ2SQL.',
+      'Improved SCRUM sprint quality via TeamCity, Selenium and ReSharper.'
+    ]
+  },
+  {
+    id: 'taylormade',
+    kind: 'role',
+    title: 'Solutions Developer',
+    company: 'Taylor Made Computer Solutions',
+    location: 'Fareham',
+    start: '2010-05', end: '2010-10',
+    logo: 'https://www.google.com/s2/favicons?sz=128&domain=tmcs.co.uk',
+    tags: ['.NET', 'C#'],
+    bullets: [
+      'Solutions Developer building tailored software for Taylor Made\'s clients.'
+    ]
+  },
+  {
+    id: 'imeta',
+    kind: 'role',
+    title: 'Senior Software Consultant',
+    company: 'IMETA Technologies',
+    location: 'Southampton',
+    start: '2005-05', end: '2010-05',
+    logo: 'https://www.google.com/s2/favicons?sz=128&domain=imeta.com',
+    tags: ['.NET', 'C#', 'Consultancy'],
+    bullets: [
+      'Senior consultant delivering bespoke software to enterprise clients.',
+      'Key engagements: Northern Rock, M-Cashback and Masternaut Three X.'
+    ]
+  },
+  {
+    id: 'silversands',
+    kind: 'role',
+    title: 'Software Developer',
+    company: 'Silversands',
+    location: 'Poole',
+    start: '2003-02', end: '2005-05',
+    logo: 'https://www.google.com/s2/favicons?sz=128&domain=silversands.co.uk',
+    tags: ['.NET', 'C#', 'SQL Server'],
+    bullets: [
+      'Early-career role building business software solutions for clients including Heritage Lottery Fund and ExxonMobil.'
+    ]
+  }
+];
+
+const education = [
+  {
+    title: 'BSc (Hons) Software Engineering',
+    company: 'Southampton Institute (now Solent University)',
+    location: 'Southampton',
+    start: '1999-09', end: '2002-06',
+    logo: 'https://www.google.com/s2/favicons?sz=128&domain=solent.ac.uk',
+    tags: ['Software Engineering']
+  },
+  {
+    title: 'A-Levels — Computer Science & Business Studies',
+    company: 'Isle of Wight College',
+    location: 'Isle of Wight',
+    start: '1997-09', end: '1999-09',
+    logo: 'https://www.google.com/s2/favicons?sz=128&domain=iwcollege.ac.uk',
+    tags: ['A-Levels']
+  }
+];
+
+const certifications = [
+  { date: '2024-03', label: 'FabCon — Las Vegas', icon: '📍' },
+  { date: '2020-03', label: 'AZ-900 — Azure Fundamentals', icon: '📜' },
+  { date: '2014-11', label: 'Exam 483 — Programming in C#', icon: '📜' },
+  { date: '2009-06', label: 'ISEB Foundation Certificate in Software Testing', icon: '📜' },
+  { date: '2008-06', label: 'Exam 552 — MCPD Windows Developer (Upgrade)', icon: '📜' },
+  { date: '2006-03', label: 'Exam 316 — Windows Apps with C# .NET', icon: '📜' },
+  { date: '2004-09', label: 'Exams 305, 310 & 229 — VB.NET, XML Web Services & SQL Server 2000', icon: '📜' }
+];
+
+const topSkills = [
+  { label: 'C# / .NET', highlight: true },
+  { label: 'Azure', highlight: true },
+  { label: 'Microsoft Fabric', highlight: true },
+  { label: 'Power BI', highlight: true },
+  { label: 'Angular' },
+  { label: 'Event Sourcing' },
+  { label: 'Azure Batch' },
+  { label: 'Kubernetes' },
+  { label: 'SQL Server' },
+  { label: 'ASP.NET MVC' },
+  { label: 'CI/CD' },
+  { label: 'Agile / SCRUM' },
+];
+
+// ── helpers ──────────────────────────────────────────────────────────────────
+
+function toDate(s) {
+  if (!s) return new Date();
+  const [y, m] = s.split('-').map(Number);
+  return new Date(y, m - 1, 1);
+}
+function fmtYear(s) {
+  if (!s) return 'Present';
+  return toDate(s).getFullYear();
+}
+function fmtMonthYear(s) {
+  if (!s) return 'Present';
+  return toDate(s).toLocaleString('en-GB', { month: 'short', year: 'numeric' });
+}
+function durationLabel(s, e) {
+  const sd = toDate(s);
+  const ed = e ? toDate(e) : new Date();
+  let months = (ed.getFullYear() - sd.getFullYear()) * 12 + (ed.getMonth() - sd.getMonth());
+  const y = Math.floor(months / 12), m = months % 12;
+  const parts = [];
+  if (y) parts.push(`${y} yr${y > 1 ? 's' : ''}`);
+  if (m) parts.push(`${m} mo`);
+  return parts.join(' ') || '<1 mo';
+}
+
+// ── render skills ─────────────────────────────────────────────────────────────
+
+const skillsGrid = document.getElementById('skillsGrid');
+topSkills.forEach(s => {
+  const el = document.createElement('span');
+  el.className = 'skill-pill' + (s.highlight ? ' highlight' : '');
+  el.textContent = s.label;
+  skillsGrid.appendChild(el);
+});
+
+// ── render timeline entries ───────────────────────────────────────────────────
+
+function renderEntries(list, containerId) {
+  const container = document.getElementById(containerId);
+  list.forEach(r => {
+    const entry = document.createElement('div');
+    entry.className = 'tl-entry';
+
+    // date
+    const dateEl = document.createElement('div');
+    dateEl.className = 'tl-date';
+    dateEl.innerHTML = `${fmtYear(r.start)}<br><span style="font-size:0.85em">${fmtYear(r.end)}</span>`;
+    entry.appendChild(dateEl);
+
+    // dot
+    const dot = document.createElement('div');
+    dot.className = 'tl-dot' + (r.contract ? ' contract' : '');
+    entry.appendChild(dot);
+
+    // content
+    const content = document.createElement('div');
+    content.className = 'tl-content';
+
+    // title row
+    const titleRow = document.createElement('div');
+    titleRow.className = 'tl-title-row';
+    if (r.logo) {
+      const img = document.createElement('img');
+      img.className = 'tl-logo';
+      img.src = r.logo;
+      img.alt = '';
+      titleRow.appendChild(img);
+    }
+    const titleEl = document.createElement('span');
+    titleEl.className = 'tl-title';
+    titleEl.textContent = r.title;
+    titleRow.appendChild(titleEl);
+    if (r.contract) {
+      const badge = document.createElement('span');
+      badge.className = 'tl-contract-badge';
+      badge.textContent = 'Contract';
+      titleRow.appendChild(badge);
+    }
+    content.appendChild(titleRow);
+
+    // company
+    const companyEl = document.createElement('div');
+    companyEl.className = 'tl-company';
+    companyEl.textContent = r.company;
+    content.appendChild(companyEl);
+
+    // location + duration
+    const locEl = document.createElement('div');
+    locEl.className = 'tl-location';
+    locEl.textContent = `${r.location} · ${fmtMonthYear(r.start)} – ${fmtMonthYear(r.end)} · ${durationLabel(r.start, r.end)}`;
+    content.appendChild(locEl);
+
+    // bullets
+    if (r.bullets && r.bullets.length) {
+      const ul = document.createElement('ul');
+      ul.className = 'tl-bullets';
+      r.bullets.forEach(b => {
+        const li = document.createElement('li');
+        li.textContent = b;
+        ul.appendChild(li);
+      });
+      content.appendChild(ul);
+    }
+
+    // tags
+    if (r.tags && r.tags.length) {
+      const tagsEl = document.createElement('div');
+      tagsEl.className = 'tl-tags';
+      r.tags.forEach(t => {
+        const tag = document.createElement('span');
+        tag.className = 'tl-tag';
+        tag.textContent = t;
+        tagsEl.appendChild(tag);
+      });
+      content.appendChild(tagsEl);
+    }
+
+    // clients
+    if (r.clients && r.clients.length) {
+      const clientsEl = document.createElement('div');
+      clientsEl.className = 'tl-clients';
+      const lbl = document.createElement('span');
+      lbl.className = 'tl-clients-label';
+      lbl.textContent = 'Clients:';
+      clientsEl.appendChild(lbl);
+      r.clients.forEach(c => {
+        const chip = document.createElement('div');
+        chip.className = 'tl-client';
+        const img = document.createElement('img');
+        img.src = c.logo;
+        img.alt = '';
+        chip.appendChild(img);
+        const name = document.createElement('span');
+        name.textContent = c.name;
+        chip.appendChild(name);
+        clientsEl.appendChild(chip);
+      });
+      content.appendChild(clientsEl);
+    }
+
+    entry.appendChild(content);
+    container.appendChild(entry);
+  });
+}
+
+renderEntries(roles, 'experienceList');
+renderEntries(education, 'educationList');
+
+// ── render certifications ────────────────────────────────────────────────────
+
+const certList = document.getElementById('certList');
+certifications.forEach(c => {
+  const item = document.createElement('div');
+  item.className = 'cert-item';
+  const dateEl = document.createElement('span');
+  dateEl.className = 'cert-date';
+  dateEl.textContent = fmtMonthYear(c.date);
+  const labelEl = document.createElement('span');
+  labelEl.className = 'cert-label';
+  labelEl.textContent = `${c.icon} ${c.label}`;
+  item.appendChild(dateEl);
+  item.appendChild(labelEl);
+  certList.appendChild(item);
+});// ── fisheye effect ───────────────────────────────────────────────────────────
+
+function updateFisheye() {
+  const entries = document.querySelectorAll('.tl-entry');
+  const center = window.innerHeight / 2;
+  entries.forEach(entry => {
+    const rect = entry.getBoundingClientRect();
+    const entryCenterY = rect.top + rect.height / 2;
+    const dist = Math.abs(entryCenterY - center);
+    const maxDist = window.innerHeight * 0.6;
+    const t = Math.max(0, 1 - dist / maxDist);
+    const ease = t * t * (3 - 2 * t); // smoothstep
+    const scale = 0.82 + ease * 0.28; // 0.82 → 1.10
+    const opacity = 0.4 + ease * 0.6; // 0.4 → 1.0
+    entry.style.transform = `scale(${scale.toFixed(3)})`;
+    entry.style.transformOrigin = 'left center';
+    entry.style.opacity = opacity.toFixed(3);
+    entry.style.transition = 'transform 0.1s ease, opacity 0.1s ease';
+  });
+}
+
+window.addEventListener('scroll', updateFisheye, { passive: true });
+updateFisheye();
+
+</script>
+</body>
+</html>
