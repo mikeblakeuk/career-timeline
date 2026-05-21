@@ -20,15 +20,34 @@
     --c-train: #b48ead;
     --c-project: #8fbc8f;
     --c-mile: #8b949e;
+    --bg-grad-top: #1a2233;
+  }
+  [data-theme="light"] {
+    --bg: #f6f8fa;
+    --panel: #ffffff;
+    --panel-2: #eef2f7;
+    --accent: #0969da;
+    --accent-2: #218bff;
+    --text: #1f2328;
+    --muted: #57606a;
+    --line: #d0d7de;
+    --role: #0969da;
+    --role-2: #0a3069;
+    --c-exam: #bf8700;
+    --c-train: #8250df;
+    --c-project: #1a7f37;
+    --c-mile: #6e7781;
+    --bg-grad-top: #e6eef8;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: radial-gradient(ellipse at top, #1a2233 0%, var(--bg) 60%);
+    background: radial-gradient(ellipse at top, var(--bg-grad-top) 0%, var(--bg) 60%);
     color: var(--text);
     min-height: 100vh;
     padding: 30px 0 40px;
+    transition: background .25s, color .25s;
   }
   header {
     max-width: 1100px;
@@ -59,6 +78,26 @@
     user-select: none;
   }
   .legend span.active { color: var(--text); border-color: var(--accent); }
+
+  .theme-toggle {
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    z-index: 1000;
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .15s, border-color .15s, color .15s, transform .15s;
+  }
+  .theme-toggle:hover { border-color: var(--accent); transform: scale(1.05); }
 
   .toggle-btn {
     background: var(--panel);
@@ -93,7 +132,7 @@
     transition: border-color .25s, box-shadow .25s, background .25s;
   }
   .cl-card.flash { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(63,140,255,.35); background: var(--panel-2); }
-  .cl-head { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
+  .cl-head { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; text-align: left; }
   .cl-logo { width: 42px; height: 42px; border-radius: 6px; background: #fff; padding: 3px; object-fit: contain; flex-shrink: 0; }
   .cl-logo.cl-icon { background: var(--panel-2); display: flex; align-items: center; justify-content: center; font-size: 22px; padding: 0; }
   .cl-company { font-size: 1.15em; font-weight: 700; }
@@ -119,6 +158,19 @@
   .cl-mile { border-left-color: var(--c-mile); }
   .cl-mile.cl-exam { border-left-color: var(--c-exam); }
   .cl-mile.cl-train { border-left-color: var(--c-train); }
+
+  /* Light-mode: keep cards dark with white text for contrast */
+  [data-theme="light"] .cl-card {
+    background: #161b22;
+    color: #e6edf3;
+    border-color: #30363d;
+  }
+  [data-theme="light"] .cl-card.flash { background: #1f2630; }
+  [data-theme="light"] .cl-title,
+  [data-theme="light"] .cl-block h5,
+  [data-theme="light"] .cl-tag { color: #8b949e; }
+  [data-theme="light"] .cl-chip,
+  [data-theme="light"] .cl-tag { background: #1f2630; border-color: #30363d; }
   .cl-project { border-left-color: var(--c-project); }
   .cl-role { border-left-color: var(--role); }
 
@@ -132,7 +184,8 @@
     header h1 { font-size: 1.4em; padding: 0 14px; }
     header p { font-size: 0.85em; padding: 0 14px; }
     .legend { display: none !important; }
-    .scroll-wrap { padding: 6px 10px; }
+    .scroll-wrap { padding: 6px 10px; overflow-x: hidden; scrollbar-width: none; }
+    .scroll-wrap::-webkit-scrollbar { display: none; }
     .card-list { margin: 14px auto 24px; gap: 10px; padding: 0 12px; }
     .cl-card { padding: 12px 14px; border-radius: 8px; }
     .cl-head { gap: 10px; margin-bottom: 4px; }
@@ -162,18 +215,8 @@
     position: relative;
     margin: 0 auto;
   }
-  /* central horizontal axis (uses --axis-y so JS can shift it when elements need to grow upward) */
-  .timeline::before {
-    content: "";
-    position: absolute;
-    left: 0; right: 0;
-    top: var(--axis-y, 230px);
-    height: 3px;
-    background: linear-gradient(90deg, transparent, var(--line) 4%, var(--line) 96%, transparent);
-    transform: translateY(-50%);
-    border-radius: 2px;
-    z-index: 0;
-  }
+  /* axis line drawn in SVG */
+  .timeline::before { display: none; }
 
   /* year tick labels — sit just BELOW the axis (jobs are above) */
   .year-tick {
@@ -221,8 +264,8 @@
   /* project bar = thin secondary stripe just below the parent role */
   .project-bar {
     position: absolute;
-    height: 10px;
-    border-radius: 5px;
+    height: 18px;
+    border-radius: 9px;
     opacity: 0.85;
     z-index: 2;
     border: 1px solid rgba(255,255,255,.15);
@@ -231,16 +274,16 @@
   /* life band = above the axis */
   .life-band {
     position: absolute;
-    height: 14px;
-    border-radius: 7px;
+    height: 18px;
+    border-radius: 9px;
     background: linear-gradient(90deg, rgba(88,166,255,.3), rgba(88,166,255,.5));
     border: 1px solid rgba(88,166,255,.6);
     z-index: 2;
   }
   .skill-band {
     position: absolute;
-    height: 8px;
-    border-radius: 4px;
+    height: 18px;
+    border-radius: 9px;
     background: linear-gradient(90deg, rgba(168,85,247,.45), rgba(168,85,247,.7));
     border: 1px solid rgba(168,85,247,.7);
     z-index: 2;
@@ -301,42 +344,32 @@
   }
   .milestone-label .icon { display: block; font-size: 1.4em; margin-bottom: 2px; }
 
-  /* role card below the bar */
+  /* role card — icon only */
   .role-card {
     position: absolute;
-    width: 160px;
+    width: 40px;
+    height: 40px;
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 10px;
-    padding: 8px 10px;
+    padding: 4px;
     z-index: 4;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: transform .15s, border-color .15s, box-shadow .15s;
   }
-  .role-card:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 8px 20px rgba(0,0,0,.5); }
+  .role-card:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 6px 16px rgba(0,0,0,.5); }
   .role-card.dim { opacity: .35; filter: grayscale(.6); }
-  .role-card .head {
-    display: flex; align-items: center; gap: 10px;
-  }
   .role-card .logo {
-    width: 30px; height: 30px;
+    width: 28px; height: 28px;
     border-radius: 6px;
     background: #fff;
     object-fit: contain;
-    padding: 3px;
-    flex-shrink: 0;
-    box-shadow: 0 1px 4px rgba(0,0,0,.4);
+    padding: 2px;
   }
   .role-card .logo.missing { display: none; }
-  .role-card .title { font-weight: 500; font-size: 0.78em; color: var(--muted); line-height: 1.2; margin-top: 2px; }
-  .role-card .company { font-weight: 700; font-size: 0.9em; color: var(--text); line-height: 1.15; }
-  .role-card .duration { font-size: 0.68em; color: var(--accent); text-transform: uppercase; letter-spacing: .5px; margin-top: 5px; font-weight: 600; }
-  .role-card .clients { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
-  .role-card .clients img {
-    width: 18px; height: 18px; border-radius: 3px;
-    background: #fff; padding: 1px; object-fit: contain;
-  }
-  .role-card .clients img.missing { display: none; }
 
   /* clients section in modal */
   .modal .clients-list { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
@@ -442,6 +475,8 @@
 </head>
 <body>
 
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" title="Toggle light/dark">🌙</button>
+
 <header>
   <h1>Mike Blake — Career Timeline</h1>
   <p>Click a role for details</p>
@@ -450,7 +485,8 @@
 <div class="legend" id="legend" style="display:none"></div>
 
 <div style="text-align:center; margin: 0 auto 14px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
-  <button id="toggleExams" class="toggle-btn active">🎓 Hide certifications</button>
+  <button id="toggleExams" class="toggle-btn">🎓 Show certifications</button>
+  <button id="toggleProjects" class="toggle-btn">🔹 Show projects</button>
 </div>
 
 <div class="scroll-wrap">
@@ -485,11 +521,11 @@ const roles = [
     location: 'Southampton',
     start: '2015-02', end: '2026-06',
     cls: 'c-milliman',
-    logo: 'https://www.google.com/s2/favicons?sz=128&domain=milliman.com',
+    logo: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAG1BMVEUiKzb09PSztrnIycwuN0HAwsUpMj0tNUCcoKSXQl1ZAAAAcUlEQVRIie3ROxaAIAxEUQL42f+KRaGJZIBplIJXzjm3SZxbTZXX7WXdSr4GogqvtQsksiBEEmTBgEdQ4BYcSIIEEkaAt2sAtebrWgEgUCAABQRIYABEA9iiBRI5SCAnC4YfNwdQDQC7Bb4CnSqw+rULQMIEVuiomQYAAAAASUVORK5CYII=',
     tags: ['C#', '.NET', 'Angular', 'Event Sourcing', 'Azure Batch', 'Azure Storage', 'Power BI', 'SQL Server', 'Kubernetes', 'Microsoft Fabric'],
     clients: [
-      { name: 'Royal London', logo: 'https://www.google.com/s2/favicons?sz=128&domain=royallondon.com' },
-      { name: 'Standard Life', logo: 'https://www.google.com/s2/favicons?sz=128&domain=standardlife.co.uk' }
+      { name: 'Royal London', logo: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHIAAAByCAMAAAC4A3VPAAAAM1BMVEX///9HAFTz7/RSD16jf6m6n790P35dH2mMX5Tcz9/Rv9To3+qAT4lpL3SXb57Fr8muj7TjvbF1AAAEm0lEQVRoge1a23LkKgw097vh/7/2gDC2wT5JJouofVhVbSqTnZkGIbVaMtv2z/5Gi+shpXerIRMhXqxFpYpkC7tZiGkYAVOJroKknhzG0hpEy8hlYcVGLelsASZlZMBEh9RkNIGMSB+IRCFD2ickQU5Q/gKJnClvkHoFZB+1cgWkvODKD1zIVE+vITIgP1w2qBErwpkhpaxYVMialzquJINQ/bkvD9lAoyIayM/xvAJUSHecYdxcLdbOoXu2JQhQqyle1cTjQop2gqC49uxVe/yOZ+oep7l88hxSyDTbtll5jmcPC/Q63bYJDJC3KfI/5AJmh23KfKI7LuQZtG2bxhGGDGlangAF8JwnkmA3R01z8fIib9MJbNLbXKvREDU8QzPkCnbpEXAtZSz/AV1btm3qugDh8CX0KbsELEBtHpv0rm0yAwuwET01r0ah9EGU+U1hq/YzNwlULl4qNa4E2i6mheykbHfoqbnd1E8OIZ7lJbIeaYq2hRBlIqKn5r07YW5LalPIeqTvbXPYKsuRU5OOrVD0DlmP+DugZqWAOY+amp1aJ6qIS8cjph4ZhxQmazBhNoVGeiYMiPkQC+a2I+kR+pzDFEovmA5Fj1A+zppqwAKmlQikJ1h4ePWAzJhsR9Aj8I0uqTdI0PF4pKffIAsmIunpN8hCvHiQPeGdox+FOZHp+Od0p8QgAxo5F3QYrfH2vwhiRNQWKBflDhKvIxFncqjesViF0sgbiLmn5uSiRVtyiy5G0/3FZJrzB4X1FZJ0/DP3KPXxdS/l47KpxJrkDxD/hORcgpS7zBzS4kvEy6/uYyEiQrSc3T5GVQ2M/UvEFq9W8ud3frNHaGTkrTc9mkbxJeJBPXRnn0dRIrVXPP8Qa/S/PRu5GxwFDewX8o7Dev1ZFcqoY3t5yjWYroifZspe3GOKUjPXYvcaim/C427HxFIKS2HdP2ynKUyO89vV9XDQ1fHV28OYxybze731TIBPfpiltciWyDzXqCEUvzvItsniEF/WKH9apAGSB3f5xcHDLDoKq9Hqu+tADcLtI0hbPicafWn45ZGRQywdnbOED9nyLR9B1vTwlXAo8NjDrUz2r4/2riaw/XiXHJaqa1/BC4893MqGXTfaEKBfU/n5U0iIWMd0ibhaH1kZsY7RysTg11PqaEXzR+UHEZukzC4yPkgfj2VnJ5nvEG8ZyIMEiq3f9BtTxa/yG0Q1s07GDDCyeYgj801VkHl/fogdaUfEqSq55IboY0ebDlHNvsNQmLyHEINXNflNrfp/K4cY7tqDmbFK27mNJBTI+1wnPMYDys1tdwDt5sedDtkyvQcZfMiieciCya3yQDmSphFw9h2fYUuJemzEntOCsc8SPRexf3afFdiL8JnaZQ2Dq2DOWR2TO4/WJjl3rpP6Q2N8S2UFynN7eZJnxHmsE7tT087JHu0wp2betYn7MXvw5RqheY8SveBK2mAB+3rP0xT69bCHefyLd6NF9Ls2T1PoD/Qfxtd71uFfaXyYR79f+LBC9YsxodqEZNGfAx9GxU15LbnqPGrLBTf1szuzRV6sTECW39P/Z739B3hoHvXRv3uRAAAAAElFTkSuQmCC' },
+      { name: 'Standard Life', logo: 'data:image/png;base64,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' }
     ],
     bullets: [
       'Core .NET developer for a custom Extract / Transform / Load product built on an Event Source framework for robust, traceable, scalable messaging.',
@@ -508,7 +544,7 @@ const roles = [
     location: 'Southampton',
     start: '2014-03', end: '2015-02',
     cls: 'c-1touch',
-    logo: 'https://www.google.com/s2/favicons?sz=128&domain=aareon.com',
+    logo: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAAAclBMVEUIbfv///8AaPsAavsAYvt1o/wAZvsAYPsAZPtyofxLhvwyffuCp/zL2f4AXvvs8//T4f6Ttf3A1f6Bqvzz+P+zy/260P2kv/1wnfxQjfwadfsScvvY5f5Kifz4+/9jl/w7gvyauv2KsP3i7P6qxf0oeftOb76wAAAE1klEQVR4nM2baZuyOgyGS+m0VYZNGAXUQZyX//8XD4vgRiHBFs7z2Yvcpmm6JcSaozjYH6IkdbIjIcfMSZPosA/iWZ8iaNu7MKWMSU6pTW6yKeWSMZqGLpoCBxCEF8Z4b/hVNmfsEgamAIJvItTG7xCCfCMYoAB+cRR0yngnKo6FrxXglIw4XjEYyUkbQHCG//lHN5whIzENcDoL1J9/cIM4T3thCsDPvZnmGwQvn4qFCYDQm+H8R1FRfADwV8rPzNeSzt9cgOIT799le2NOUAPEW6bDfC22VWdoJYBLPxz9R1HqYgEKoc98LWUsKgASzfYrgg0G4Kwh+l8lz2CAX4frt08Id35hAHGpMfweRcuByfAO8JsZsl8RZO8+eAdwjNmvCJxpgK2R8e/Et1MAuYH4f5RMxgFCbelXJRaOAey05593CVcN4Bsd/07cVwJcDE6Au+hFBXA1HICd5HUY4OQtY58Q7zQIkGnZ/0BkZ0MA4UIDUEuG7wD+AjPwLuG/AeSLzIBONH8FCBaLwFZe8AKwXSwCW9nnZwB30Qio1WXkG8B5YQfcXdACnBZ3QOWC0wPAslOgFU3uAL7xXcCQmN8DFHOWYZuqBYooXvQA6FWASsHKPNko9OVAPtiuCDVAgAxB7uU/o2d+6wsUUyK4AUSoEaAynLwOhQHw6AaAMU9EMnTAmgVASAuAGgHxM20eDFCPQQUQIkaAKS8a5gDwsAG4wOeA2N2NBIfr94u+TjgA+1IDxPAs1ERNq30pJOcv099zcQCExRWAi0iDvf188PaUoQHcCgAeAvLQ2d8MQ6MBqiAgVgoOAdFNQFexfUID2GkFAH8F6PdxqrBlARKAUIvE4Cwg/90+/6faP+IBWEwCcAyKbpL9U50gZgAEZA8+j3hdCGxUn8cDyD2B7wVEFwLKsMUD8IJ8g4OQdwDK1X5GEEYkgc8CEwAJgacB2wCAnRIHat8IQGU+WxcgI8d1AeDmDQFgBABAbkgazRkCag/LwwMc5wRhvlWofyGEA5RzpuG0MNNwRiLSCFAlIngqNgFQpeJoXYAIsRzTacNogGo5hm9IeoC0dIaVzdmQwLdk03lAYHfF9ZYMvikFZEI0gIgR23ITABRzMDEA0BxMwEczAwDN0Qx8ODUA0BxOwcdzEwAx5oJCP0B7QQEOAv0Atysa6CWVfoDbJRX0mk4/wNFCXVRqB+gvKoFjoB2gv6q1StA8sN1dI7dU/YJffxrtQdnVLq0OoIAtyewm9S+4bAX6Q7LoAVZ/sFj9yWb9R6vVn+3WeLgMngAWd8Hr0+36j9erP99b/qIuGChgWL2EY/0ilvXLeFYvZBpZ6LXKfqpqfC5mW8QFUl3Mtkw5385SA1hX8wWNV2sMwMoNlxTy3BoHMFxT+FxLOAjwa6qsubFfvr39/w8Lm63YFAHNQKXd6xe3V9qaKO9/K6oeAbAS7fmAvZZUjwNYoe4Wj1BhSN3kwnU2uXB0k0u1Ml30tflc1A1fY41Ooa5GJ5X7pwCsP0eDE9j8Vq9KB/ZhSuDsMG5hqt0v3nzSb0e9zVTdGaDhMZ2LQL3084bHFmFeyyfAvLmmV6mz6bWWX2QCHI9cZJrbfhsFEbTxOTLQ+HxjWLX1u1W8u6ZUKJrfrzvDze+d/KH2f+ioP+s/wAZGS96B07YAAAAASUVORK5CYII=',
     tags: ['C#', 'Mobile Forms Engine', 'UAT', 'CI/CD', 'Unit Tests', 'ReSharper', 'Technical Blogging'],
     clients: [
       { name: 'Arron Council', logo: 'https://www.google.com/s2/favicons?sz=128&domain=arron.gov.uk' }
@@ -529,11 +565,11 @@ const roles = [
     location: 'London',
     start: '2011-08', end: '2013-11',
     cls: 'c-rbs',
-    logo: 'https://www.google.com/s2/favicons?sz=128&domain=rbs.com',
+    logo: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAChElEQVQ4jWWTTU9TYRCFn3nvpb2l0ObSglgoHwGCWBKjkSgJxLBwxcqFK7auTPwPbl37G3DtP2CDiRHcQDAYhfAhUKBQClxa2t47LvqB4Fm9mcy8c+bMGXkRf40azagyp6JTqAyAJgEHEGpQoASSQ3RLVBZFmCdgzVajmUD1IzCDNnJB0cYTBBEkAppGSSs6rcpzY+SdrcocMMMdJKMpoqEYABflPHnv6G7KjCpzdo32TVRVSUS7efXoLZ1tvRSrHqv573xd/8xl8RRpTgUqOmVqM9/AtlqY6H/JYGKMtnA7RbkmFk8xmHqCJfZtDioDdl2weveASEuUmJNgLfuNq8oF1UgIp9Wlp3OMzb1lvOIZIk1tk3Zd7Xr3ENFwnJy3TzWosJ1fx3X7GUpPcOEdE7IcSpZNEPiNEsfqcx6+b8z+4N5TZsff0OeOYsRwdLmL75exLBtTrtKfzHDle5x7uQYLMY01tzsuk4Oz9MT7iYbjbORWOPGyFEsF8qc7uE6SuNvDcPoZkXB7UwZTa670dozitMY5vD7ix/ES++ebuJFOEtEUfbERnEgM34JEvJfuxDCqAYDadYdFTopZdq53cSTGpV2hoz3FkDvO+P1JbBPisHTAQXBEuVrispinbtKSAcmJCCeFXXYOV1ENiEZceroynJdO+HP2C8sInU4XrRpmJ7vCaWG3roHkbES3UNJ+4LOxt8x15QrLtIAGHOZ+s55dYqTrMUYMF+UCmwfL+IFf+0B0yxaVRUWnRQSvmOfn9hcEaV4EwN7ZRo2x1m6k4QNRWTQizAMLtwyGwj/+VhRVrcebWBBh3hoIZ47FsAxS4Ga1IcDm/3POIqwI8smIfJBA1v4CMfQUwZ067REAAAAASUVORK5CYII=',
     tags: ['.NET', 'JIRA', 'SVN', 'TeamCity', 'NUnit', 'Waterfall→Agile', 'Reflection', 'NGen'],
     clients: [
-      { name: 'NatWest',  logo: 'https://www.google.com/s2/favicons?sz=128&domain=natwest.com' },
-      { name: "Moody's",  logo: 'https://www.google.com/s2/favicons?sz=128&domain=moodys.com' }
+      { name: 'NatWest',  logo: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACrklEQVQ4jXWSy29VZRTFf/v7zuM+yu0tDb20aQ1IbaDBNhJjE4M60oHE6EBgYML/gKQzEwdMSWDEgIQBU0YOBEITFYkGExsqYSBqrFGkUiu1j3vPOfee833bwT08YsJK9h7ttffKXktemThCnIZR2AtPqvFzwAQwBtQASx8OyIAV4L46s+TC4my33tuSueH3a4HaJeNkSqU/bVC2JCYRiwAV9Qxqhqc/IICKPsiNm7V7gpl5Ixx7TLYomxIzpClTboNx38HgWTdVKhTokyXSkCKIArH6ppY6BdiUGIBz218w67ZxwLemxqnGu2yaGg2foAgKiPXvGNBWyccD66bKx8n3zLptANaAlk84lt4mlRCP4RkMGqDVv650JKLl24y6db4OW3wWjfOTWDLg7e4yLxZrbJpqeR+AigGqTxUIVc25Fu3hhm1yvjLLV/EkLwA/B0M8tINPqX2EARBYlN9sk8O9PzjT+YaGOlYxrNhhHtom35k6S+E4H3Vu8UswwpeVacbcBh4RA5BIwIDmnEoWGfUZdc25Gu/lTjjCA9PgYu1VugQc6S5zPFlk0KekEpaWQ/G3GeDD7C6H3Ab/ItywTa5Ee3ktX2XatzngtziU32cLOKAF76U/8I/ZAaABkO3QnGXbZPGxldqj4Tu80fudo/kKWenGMrABrNgmFXKA3ABrQ77DzfglrseTTKIc9gnz7ZssRBPcsjuplPl+C/g8mmChepBh1wbIAoS/UF4edh0WqjOIBFiUms/5MRzj02CUE917FCg5wtV4Pw2fIigq0pbXB46eDgL/ieBJJOKRqT9J5Yhrk4pl1VQx5cN2+4S6ZjixuMJckLmhD5qh2Hviaf3P4+dC+m07x++3I7v2ZcbJJVNYjxADvTLVeVk9oAu0y1/+qk4uO+tPdOu9P/8DYSUUStURXKAAAAAASUVORK5CYII=' },
+      { name: "Moody's",  logo: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAAAkFBMVEUKEmT///++v88AAF8AAF0AAFfU1uRiZpUAAFvt7vOmp74RG28AAFWGirADDmIAAGEACmIABmEAAGVucZ6fob3FxdRKToWytMje3+n39/pZXpSRk64KFWowNXnl5e5ESIFxc5iWmbi6vNIkKG03PX58gKqHiaivscsgJW5VWIeQk7d0eaU6Qod5fKAAEWsAAE4plUBuAAADBklEQVR4nO2Zi3KiMBRAgwkW+ghBAbFVLIqvut39/7/bBLBcSHQ6WOLuzD3T6ZBHmwO5hBsgBEEQBEEQBEEQBEEQBEH+YQLKKGPqF62OJEGnD6Wt9rK7qP60bCgraL/xWTTSeWNtR0OfOAmDhxjWzLxeAu7Y0RkvOOgilpmhzwNlL60K//nnBLJVCLrQ6dy2gPMOJ5S+mboMK5ADAU7W9gXW4D4QG1MIDCwwJ00UhitTj4EFnKKJQra9h8C2WQnc0T0E4q9VhU/8ewhk4TkIwpVpFRhcwE/O9wEzrgKDCzi7cxAExlVgeIHH+gqIzYUOmsD+Bx9GkvhQBUFwNIeAFBDFaSrJqw7pUvyogF8/j+jJ3C4FiFC5g1vHyGvPfOCSgBpA4e2vt/ND9Q+2/SbgisBHFYXPxgdBI1BP0Ujwa6P0ERi7qlk8XWj+ukKRKqTL8Ooo3xWYp6AwUedEpxdavwTKdbLoGQBdAX8GCis1Bx6oSVsrQiUQFuo47xsAmsAJ3HO5FOAL0BxHugBTgvugbwBoAr9AyI3kUhQmoCLSBcRGTkt26LcCmAQmYJrHcmWhO9BaPGoC9FOGxrF/AOgCOSgcA7kjAK3PuoDIs/Slu425ReB3AkqflJMYXJE/ugBZrgpyQwBoAk8MlPZULEHxxXAFCBe3zL9JAJ4ypa9wRNcgcDtdgQ9QXHggBNLCsyFAH8BK8OqCm2IUWhFgBRgzX4B8NGJWBEQAkvAxuBzzJLAiwFneFDOQC/gTbkegerqcT7s5XHvEjgBh5n3IidoS8MxpuEwRLQmYs9CxTJJtTUHiGNjLlMuSADfuRHbUmgAJZo6GejRbE2glITWpem9nSyAs9BuxfAlpS4AE+l6kHM2agBc5Xco9gjWBVhpSkpVbf2sCXNuORZ5VAULjjkD15taiQCcI/CS0LPDeFoiransComjtg53H6lWBPQEyaQfBlA4o0PpkM6sF6GfrW8zBUBsnvV9JdIAfrWhTef42pX54U9v6aIUgCIIgCIIgCIIgCIIg/xF/AdmCMvor40NeAAAAAElFTkSuQmCC' }
     ],
     bullets: [
       'Led the London software team of the Strategic Document Solution (SDS) managing Agreement data, co-ordinating with developers in India.',
@@ -550,10 +586,10 @@ const roles = [
     location: 'Southampton',
     start: '2010-10', end: '2011-08',
     cls: 'c-benefex',
-    logo: 'https://www.google.com/s2/favicons?sz=128&domain=hellobenefex.com',
+    logo: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAAAKlBMVEVHcEwAvQAAvQAAvQAAvQAAvQAAvQAAvQAAvQAAvQAAvQAAvQAAvQAAvQA9pkynAAAADXRSTlMAClGKv+XWOKTzbSYXIslCfAAABQxJREFUeJzFW1l25CAMDIvxRu5/3bG70zOdpCSqwH5T/yAhJKGNj48hhLDHLS25TCdKXra41zC2J426x5Snz1+Ycor77UyEeVsA8RfKwcOd5Ou2FJv6A2tOt7FQU1kb5J93kW65iJoo6k8WthvI09QfyPO15KOjeJYQLryHeVHJn7hME8LW0nwDS72Efl145buDg12+/XcOxm8hDpD/HNeDsHWL/wvxP9P/nIb8suD7TCwD9Ldx8gf6XeKg/r2Qb6O/HpFQXnIuZfKuau3Uw9m3//IW/tTohgl9WrBnj3xO83cDD3MyWSg9hhC81zdvaMvdWrL2BAeeAmyGhw/Wm510+rutVdl5YIx7y/odmAqw+mHGDhVhkl2BeQGlZVIzFJ1qiNVS6NI+CtREVQstdWbsKSBFFBmwXBBxfoN7LSoIRgTK0f/YhxmI2AQnUpOQIUiRWcUCoN3ZMAOGCdJ7IB8mXQH2QYXeAh1AYWDGAuB9GbpBxQyxAPjnBB5A8IQV0vceoO+Afkh5C6AT5IMq7EOEiAS/AnSKZ4QxghXCRIR1QWYYJegglCAbVFo+XFCBGd0Au94MY4WoGKZC5HrI/AkhL8AypAQQNjONyLwKwkMUZqVXRRGcAHyHGBWenSxG0ABoRSshQC+JmIR3qKJztF8BN4mSInKYjTRVePdqiFpWhiTZdOPe9bfSmJ9Aomy5cdP6HxCrtegsDRH6RUQ1IUI34OtQ9ejLGSEK6P1IBJrNC3qZFumg60U8+ysdxXq0nasCRgbzYLynNgfs2Q1FjAzmPH7sqhADg3J1EJcCDqTOIj3Yz9VBQwO6ewQBbOYVOY0ArHT3TlFG4BlBMGxwXfo0AKY03lNoO4GpywagG/Cs0JLAg4WeRglgwH1M3TCgp28JImI/nm1U02VXKDOAi5L/sIj1UcSAL8dWQ4WsankM+A+6+xg+OJACAp2BVk9D5KCDAfs5eIFOrD+wGTaXm1Xlv1vweoCsqs1/aHW2+cYlcMVMVB9iQxXp3BTWeKmFjf4qW2FTX8M3uMkJXx/oZ+AwIc8g2SIf2IOvLbhjFuQlADkqLcdoWyTpk9Wo+CccTeByZOQKpezannUqlBaoMdlv2DEKJUlkh3yV+gmLA26GAJiB+KQbpdYD1EFGWw0nrISdugMU4cjhrdVyYtYiLZSHD4xofWLWwnqLPABiiIBiHimBPABiFM0pScIwV012DWdASRIGmfL8Bb4DzhUh6VHq0zwGac+XTB/gjInbBTLPd22/GIBaSB4DrhW1ADNAmjNu22kPwhADRuNSugRcv2Y9Km7dalV/GB2yZ8DNa2kuE7oz3pjxgy4MJeKknd8Ai0B4ErAjFC7RiKrYwMDIl4U7NKoOK8mBUT/l6ZuhLceBUTeSzMisfhHuwBiEFsoUzi7t+MzMC9QZd7sV6bUCgpmbyYO9TgmywHnWB3m7dHtN/+qFnObf++0x2RUCKcX9gluIPr90vY0V13lbslel6RlsbhVBz6nuZUkpnZPd7mD3wW9XD6dViRbQN1oemmVYFh1TzU/oX5sghBGWnzJwGqMC/ZEfHhd8cJDrCxdzMEifaAg06I9/tPK/OTTQr39vUH45fgcbwbQQnAqoh54JBgNdnw37urcWZCGsnf1rhwXFHKZu7+thQ3+t0eFL7wBFCyEm99V/Hj5bX3Auwe7zcFCPd5J/oM6YiUPyEYRq9yDU8+t//vf1/6QdVL3/A0sFPJF1gdePAAAAAElFTkSuQmCC',
     tags: ['ASP.NET MVC 3', 'jQuery', 'C#', 'NServiceBus', 'MSMQ', 'SQL 2008', 'LINQ2SQL', 'TeamCity', 'Selenium', 'ReSharper'],
     clients: [
-      { name: 'Coca-Cola', logo: 'https://www.google.com/s2/favicons?sz=128&domain=coca-cola.com' }
+      { name: 'Coca-Cola', logo: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAAAYFBMVEUAAAD////09PT5+fkqKirr6+vv7++oqKiHh4fHx8d2dnZeXl6lpaXS0tIcHByZmZnd3d1VVVXj4+NAQECSkpK7u7tlZWUYGBg2NjYKCgqfn58jIyNra2t/f39LS0tQUFA+m18pAAACAklEQVR4nO2X2ZKCMBBFDWQFIluigID//5eDllPlyK4BH+aeJ8sKnpsmaZPDAQAAAAAAAAAAAAAAAAAAAADwvzkX3zKXNJWKMc6/Yj/WsSIPvqCnUeIT8q0AtNbkDzv75Yt+3wDnhr3qdw0gs75+xwBpr/iPAMd99GpY3wXQwfb6i/XG/ORAiE631dNqXH8PQIg9bae/mIGl/xqAeDrcyF9P638DdGQyd24/BnP6pwBdBOu4DP22Nx3glsHkrrZlMfjufY+zTFtRVZWwOmPcO7wOUbGLTXESvC/XNmpa+mccvfYCEMKTqP3IXkrd23hcBFc6OHrk1VhZv7UoL6HpNT2m5bB7KkBXsUSJ07oVQQPbn7uS0/UcDfCIoeL6mtPztPlM21CqfsPzEzM7hZkAdzytRGSCU0tffq685GFgIqGSoce4rWeLtizAYzrdFmLZjUR33D8x5vkjw7lZtoiWB1iDpxb/vWziX9NT3du5ndh02wfIqpX9w63el6svey71iVlrdxqAm7euuo7sftK8Y3cWQL1/tq7taC9bCq/y8m3/jTxWg7emRWQfTP45Qy1H7y5T2MblUbZoVMIWvw+WiKtD+S9tEAs1e5jmSswcMz7iTPOwiTT3PM9/Lojvd98wa0558dmiW0xZpHUgTVXFkYhlU6d7iQEAAAAAAAAAAAD25Ac4Bhg1mOcjDAAAAABJRU5ErkJggg==' }
     ],
     bullets: [
       'Worked across the full Benefex architecture: ASP.NET MVC 3 site, jQuery front end and a dynamically compiled C# rule engine for instant user feedback.',
@@ -570,7 +606,7 @@ const roles = [
     location: 'Fareham',
     start: '2010-05', end: '2010-10',
     cls: 'c-taylormade',
-    logo: 'https://www.google.com/s2/favicons?sz=128&domain=tmcs.co.uk',
+    logo: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAAAkFBMVEX///91O71zOLxsKbpqI7nVyOrt6PVwMruqjdTt5/br5PVuK7r/AGtvLrvh2PBrJrnEseGBT8JnHbjk3PH/AFv/AGT/AF+TbMr6+PyPZshhALWefc/MvOX39Pu9p924oduLYMb/7PL/gqj/VY//9Pj/3uh7RL//R4b/ZJb/I3b/jrH/pMD/dKD/1+Laz+y0m9nQitrIAAADIklEQVR4nO2b67KaMBCAIVKjIlo44qXn2FNte3pv3//tqk6nw0A22QvZdDrub+D7dhMCSSDL7nGPewhiNautrWcPifDHQ2NNnhvb7PYp+IvK5n/C2nkC/trkf8NMFkn5CQx6fHWDAV/ZYDEZ8FUNHPmrGjjzVzQA8lczAPNXMvDyFQwC/OgGQX5kAwQ/qgGKH9EAyY9mgOZHMiDwoxiQ+BEMiPzRDcj8kQ0Y/FENWPwRDZj80QzY/JEMBPxRDLp8W64LYjRvhBPHDt82j0+r+ZQasklbh79+PMpyEfKLt/r4Ln/ynJZv3vEvczq/P38Q8vNixeZ/3LRtuz3J+OaFzc8+tcvlsv1MPm/eHX/sjC+wWd5CxM8rwS3Q3vhfiGf1xt/qNV/g6/bC336jnTTvjf8Sgez7Zrs5y/gygez0g3gXDvhCAWoM+boCU8fzX1PAkb/sNqTyS9f7j2QgooWr/pcwuRLfnf8l1j91+OD7p6lV+FD+126o0Avg/G+NEN1g6sn/GmXNfynBxN6G5h+mqH89vYLDddUVfHj/HXtnA/yrQlVOoFiXLoFZAx1fHHqqTZjvl3MOFTM4reYBe2Qkgd7o+iKYgfIEekNLJeTTBXL7bwnUqZsgeSdMfhtmB2EJqAJ21zv0WMl6AVHA2MGGu+9hPLqAKafDg/2P41EFTOlcORLVgCIA8GU1IAg46y+uAV7Aw5fUAC3g5QtqgBUI8Pk1QAoE+ewa4ARMhVi55dUAJWCqYP7sGmAEkHxeDRACaD6rBmEBAp9Tg6AAic+oQUiAyKfXICBA5ocnqyQBBh9cruEIsPjEfuATYPJp/cAjwOaT+gEsIOBTagAKiPgEA0hAyMcbAAKVlI82AAQKMR9rAAiM8rkvyiDqcjLGIO56NuYjurgL6mGD2Cv6wVaIvqUQMoi/pxH6mDT+porfQGNXx9sKKttKPgOdfS1PKyhtrHm2tZR29kADva1FwEBNADLQEwDmC4oC7vmCpoCzFVQFXPMFXQFHDZQFhv1AW6BfA/H8g2HQrUEC/sXAdn73S8DPsv0u7Q+PWfJfPu9xj/8kfgOzAS3eKJ6BuAAAAABJRU5ErkJggg==',
     tags: ['.NET', 'C#', 'Solutions Delivery'],
     bullets: [
       'Solutions Developer building tailored software for Taylor Made\'s clients.'
@@ -588,7 +624,7 @@ const roles = [
     tags: ['.NET', 'C#', 'Consultancy', 'Northern Rock', 'M-Cashback', 'Masternaught Three X'],
     clients: [
       { name: 'Northern Rock', logo: 'https://www.google.com/s2/favicons?sz=128&domain=northernrock.co.uk' },
-      { name: 'Masternaut',    logo: 'https://www.google.com/s2/favicons?sz=128&domain=masternaut.com' }
+      { name: 'Masternaut',    logo: 'data:image/png;base64,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' }
     ],
     bullets: [
       'Senior consultant delivering bespoke software to enterprise clients.',
@@ -603,11 +639,11 @@ const roles = [
     location: 'Poole',
     start: '2003-02', end: '2005-05',
     cls: 'c-silversands',
-    logo: 'https://www.google.com/s2/favicons?sz=128&domain=silversands.co.uk',
+    logo: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAABEVBMVEVHcEz358X///+Eq9Pw8Ofs7+L6/Pnw7+X+///6+vT9/fmVt9pPgrq30sDb59X////5yYL2rUbp5cP83KOsxtn726uMrM/C27X4wXFskb/60JL4vWmw0aKTwH/715WCtnL5xnaSv4Scxo3zlwBElCj2rCf3sDD1qB8ASpn1pBj5xFT6y2L703H4wEz82Hr6z2n0oBL3tDf5x1r94oz4vEb3tzz0mgWgxn70nQupy4eVwHW71ZmMu2yy0JDF26H83YPzlAD96JiDtmN5sVtuq1L4ukDQ4Kva5rVwnMtipEVWnjtcjcL/8KcoZKk2b68ZWaJNmTLm7MBCerYASJilxOMLUJ0ARJa60+z3t1TK3vNHcExfJkVaAAAAW3RSTlMAhQf9W3EbSBA0Jfv9vaEC1vzB35KjwOXk4rv32vP49PPe8v////////////////////////////////////////////////////////////////////////8Abt4SIAAACUhJREFUeJztmwlXGkkQxx0Y5kCG4RIEjTlAuUIElFM0LOAqEg5BCPn+X2SrunsuPFbmzfD27fOPMZqD/2+qqqurB9nb+9CHPvSh/4dUSfCLIs+LsiCpu7cXZF8wkbi5ur66ukoEfbK0W3s/uF+1GqB2u93ptFvHnLxDe8EXuWppQohOr9c45ndlr/KR61aj1bqmQgSIQq+T2BGBEEw0iP0VEUVAgn7CvwN7VY602g1qfwMiCEgAAP3IDgD4RJv5g/vf5AMQWqQOBg2f6/6+RKcNCSD+f1MBAcSAhcDjsj+fgCVH/cH6DsQIaBIGx+6uRVVO9Ho0AHj9d1RAQJKAIfjkbg6kRK9vBODu7hFEAG52BBDsDHomgMdHnYAAtDv9T5yb/vy3YZ8BQAbuGMCjBtBAADcjIBwPBy8A6BFodADAxWboUQYGgFEDphRADbi5CnyfHzQADAFZBM+K0MU+IH6dMYD2q8uw33atBlW/MswAgCkHN9ZGRGrQvd1ICg4yGS0E1lZ8Y7TiTtAtfyiADANgIaCb0Q3dD69ZAK5cCwD/LUMBjCqwbscNdwMgXGcyGUsINgYSMhL1r+yuQdUjCYLkeXWyFhLMP0NCQGOgj2RkKoS5FAJgbzaXRE7Z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',
     tags: ['.NET', 'C#', 'SQL Server'],
     clients: [
-      { name: 'Heritage Lottery Fund', logo: 'https://www.google.com/s2/favicons?sz=128&domain=heritagefund.org.uk' },
-      { name: 'ExxonMobil',            logo: 'https://www.google.com/s2/favicons?sz=128&domain=exxonmobil.com' }
+      { name: 'Heritage Lottery Fund', logo: 'data:image/png;base64,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' },
+      { name: 'ExxonMobil',            logo: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABKElEQVQ4jaWTwXHCMBBFXzwU4IPOGtLBlgAdhA7iDkgFpAOTCiAVkA6gg2wJHp11cAkcWMEiPOQQzfgg6f+//6/W8M/18uwyR2kBse0YkmqNaf4osAOO9i2mALMcZQ7M3ZmGpGOO8gm82dk+JN1W2CEkHWbACPTOquYoX8DGCXYW5xdojbMEaELSsin5xKzjgcDByAAfpR8NwIRIWSuL07sebEPSfQHcvUKOcnC5McFviwhwCkmXnjNz5N6RR7MrrjcDsKocXiLkKO/AulQBXifidBb1XiBHEWdxwHLXQKC3l3hwsLFqJ25N2znrRUyAYy3yMMo5yto5+gE6LpN4nRNgWVw2FXnhyMotdz0nVyf1Mwq3YRlC0sHdtVNOnv6NE/FaLlNaiugZwYd3uzt6/qQAAAAASUVORK5CYII=' }
     ],
     bullets: [
       'Software Developer at Silversands in Poole — early career role building business software solutions.'
@@ -621,7 +657,7 @@ const roles = [
     location: 'Southampton',
     start: '1999-09', end: '2002-06',
     cls: 'c-solent',
-    logo: 'https://www.google.com/s2/favicons?sz=128&domain=solent.ac.uk',
+    logo: 'data:image/png;base64,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',
     tags: ['Education', 'Software Engineering'],
     bullets: [
       'Studied BSc (Hons) Software Engineering at Southampton Institute (now Solent University).'
@@ -635,7 +671,7 @@ const roles = [
     location: 'Isle of Wight',
     start: '1997-09', end: '1999-09',
     cls: 'c-iwcollege',
-    logo: 'https://www.google.com/s2/favicons?sz=128&domain=iwcollege.ac.uk',
+    logo: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAAAG1BMVEVHcEwAn+QAn+MAn+MAn+QAn+MAn+MAn+MAn+MRMwc/AAAACHRSTlMAFuXGM1akfxNLfBIAAAN4SURBVHic7VvbkuwgCBwvifn/Lz5mpjKXXYFGUPdUTb/sy05AaEEUbrcv/n+EO1ZIzlvZU0oxxRjr37SXbZYeIZc9Hk3EfcuD1QjbntrCL6R9GyhdEH4ZIg1xR6YM39ShZG/x2OLfzeCoQtgUi3/BTQX16p/YPVToF3+iWOkYNov4imjblcG0/Ad2gxGKXfxhMcLuIr+idIm3se8TPW7o2/sU9DHBV34lglIDH/p9aKCionX3NzVQ2MB//XfANhix/hOoDUbJrxpAuzE78/8dCdFgoPwakWT5bvG3DTEqD9oAT0hEzPiXai2SH5VRrVIS7LjIygfzf61AfrGJrld+gI0GkAOoY38IBVCBpSHggMhnVjGH8ySUHSCnVb584rehGAKxjMY4gpcvMhA915AfEoKAxEA8oYf2p6QwyFNYd6RpHaikIMgzQHuk+v01MQ2wBsAS6Tt+JlVRPmsA7frvH/zQQC4N2CzYVeW+L0lOw2wQ7KytXnsBKI24PQicItpIig8wFNQT8EKIsHzOA4ZrjgLan/VAtwNOJPT3dBro2YEvbGBpzhzFTQaoGoD/Rntgzh00HYWMBkBBU2Dc1fMHSPlQLWVHWO0BmoOTPECGof4orAO5CdIc+fQm6LthdFRgEgUCGYi9H17UCkzi4HIFyFw4axd+FViuwHIS/mEFJgWi5aF4fTJano6XH0joI9kkFtKl6SwSkApMOpYzhckkH9DV+fLC4DB+GbQgU54baZhAFo26oMhoMBt4RYPtpEGXVA9uWZ8r+xPCleeRL3AXld08fDILsMHYq1rEBv6X1R9rkm3AXtf3pIQfsUX8BH0wPGF/sJC9wD/ZaG3QiK3iJ1gFlDZoxnbJBtK7pWIvEJtasAHPggOPB4E+5PIaiE+3WEMW14QleEF+vJabNIX3c94GyPM974cgdjHwNoAaGHaqfxvrfGY1AFs4UqOVXe76vvRnTQA3scT07GE5u1hA4YfUxKJu44kVul+ILHZs5GwBiCWrW7nWN7Mtb+cbqAF8sBrT0aZpa13d1Lq+rXd9Y7N7a7f9WG1C54zB4vb+2/oBB58ZA9stE9EXN2f5HkYwj/mcAGfcGnAZdLqtH/U6obaC67DbHVkTFfzH/U6gA49Ho+/aTYcCjHyOHjvNhdJhwtDrE9fY7x2Psd9ZT3zvuCqjBaK/cME/PuXAwKxrtggAAAAASUVORK5CYII=',
     tags: ['Education', 'A-Levels'],
     bullets: [
       'Studied A-Levels in Computer Science and Business Studies at Isle of Wight College.'
@@ -651,9 +687,9 @@ const milestones = [
   { date: '2006-03', label: 'Exam 316 — Windows Apps with C# .NET', icon: '📜', isExam: true },
   { date: '2004-09', label: 'Exams 305, 310 and 229 — VB.NET Web Apps, XML Web Services & SQL Server 2000', icon: '📜', isExam: true },
   // Other milestones
-  { date: '2024-03', label: 'FabCon — Las Vegas', icon: '📍' },
+  { date: '2024-03', label: 'FabCon — Las Vegas', icon: '📍', isExam: true },
   { date: '2009-06', label: 'ISEB Foundation Certificate in Software Testing', icon: '📜', isExam: true },
-  { date: '2002-06', label: 'BSc (Hons) Software Engineering', icon: '🎓', logo: 'https://www.google.com/s2/favicons?sz=128&domain=solent.ac.uk' }
+  { date: '2002-06', label: 'BSc (Hons) Software Engineering', icon: '🎓', logo: 'data:image/png;base64,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', isExam: true }
 ];
 
 const lifeBands = [
@@ -661,7 +697,7 @@ const lifeBands = [
 ];
 
 const skillBands = [
-  { start: '2002-06', end: null,      label: '.NET / C#', icon: '⚡', color: '#a855f7' },
+  { start: '2003-01', end: '2026-06',      label: '.NET / C#', icon: '⚡', color: '#a855f7', openEnd: true },
   { start: '2015-02', end: '2026-05', label: 'Azure',     icon: '☁️', color: '#3b9eff' }
 ];
 
@@ -718,7 +754,7 @@ function durationLabel(s, e) {
 
 // --- horizontal scale (fit to viewport width) ---
 const minDate = toDate('1997-01');
-const maxDate = new Date(2028, 11, 31);
+const maxDate = new Date(2027, 11, 31);
 const LEFT_PAD = 30, RIGHT_PAD = 30;
 const monthsBetween = (a, b) => (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth());
 const totalMonths = monthsBetween(minDate, maxDate);
@@ -729,8 +765,9 @@ let pxPerMonth = BASE_PX_PER_MONTH;
 
 const timeline = document.getElementById('timeline');
 const AXIS_Y = 230;
-let showExams = true;
+let showExams = false;
 let showTraining = true;
+let showProjects = false;
 
 function xPx(d) { return LEFT_PAD + monthsBetween(minDate, d) * pxPerMonth; }
 
@@ -821,361 +858,208 @@ function pushAway(el, occupied, direction, step = 4, maxIter = 400) {
 
 function render() {
   timeline.innerHTML = '';
-  timeline.style.setProperty('--axis-y', AXIS_Y + 'px');
   const totalWidth = LEFT_PAD + totalMonths * pxPerMonth + RIGHT_PAD;
   timeline.style.width = totalWidth + 'px';
-  // give the timeline a generous initial height so post-render measurement works
   timeline.style.height = '900px';
 
-  const occAbove = [];   // rects in the above-axis zone (push 'up')
-  const occBelow = [];   // rects in the below-axis zone (push 'down')
+  const CURVE_R = 14;
+  const LANE_H  = 36;
+  const ICON_H  = 50; // icon card height + gap above branch
+  const DOT_R   = 5;
 
-  // year ticks
-  const yearStep = pxPerMonth * 12 < 30 ? 10 : pxPerMonth * 12 < 60 ? 5 : 1;
-  const yearTickRects = [];
+  // ── lane assignment (greedy, left-to-right) ──────────────────────────────
+  const sortedRoles = [...roles].sort((a,b) => toDate(a.start) - toDate(b.start));
+  const laneEndX   = [];
+  const roleLanes  = new Map();
+  sortedRoles.forEach(r => {
+    const x1 = xPx(toDate(r.start));
+    const x2 = xPx(r.end ? toDate(r.end) : maxDate);
+    let lane = -1;
+    for (let i = 0; i < laneEndX.length; i++) {
+      if (laneEndX[i] + CURVE_R + 6 <= x1) { lane = i; laneEndX[i] = x2; break; }
+    }
+    if (lane === -1) { lane = laneEndX.length; laneEndX.push(x2); }
+    roleLanes.set(r.id, lane);
+  });
+  const numLanes = laneEndX.length;
+
+  // ── axis Y: enough room for all lanes + icons ─────────────────────────────
+  const axisY = ICON_H + numLanes * LANE_H + CURVE_R + 12;
+  timeline.style.setProperty('--axis-y', axisY + 'px');
+
+  // ── SVG layer ─────────────────────────────────────────────────────────────
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.style.cssText = `position:absolute;left:0;top:0;width:${totalWidth}px;height:1px;overflow:visible;pointer-events:none;z-index:1;`;
+  timeline.appendChild(svg);
+
+  function svgEl(tag, attrs, styles) {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    if (attrs)  Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k, v));
+    if (styles) Object.assign(el.style, styles);
+    svg.appendChild(el);
+    return el;
+  }
+
+  // main trunk line
+  svgEl('line', { x1:0, y1:axisY, x2:totalWidth, y2:axisY,
+                   'stroke-width':2 }, { stroke:'var(--line)' });
+
+  // ── year ticks ────────────────────────────────────────────────────────────
+  const allowedYears = new Set([2000, 2005, 2010, 2015, 2020, 2025]);
   for (let y = minDate.getFullYear(); y <= maxDate.getFullYear(); y++) {
-    const isDecade = (y % 10 === 0);
-    if (y % yearStep !== 0 && !isDecade) continue;
+    if (!allowedYears.has(y)) continue;
     const lbl = document.createElement('div');
-    lbl.className = 'year-tick' + (isDecade ? ' decade' : '');
+    lbl.className = 'year-tick' + (y % 10 === 0 ? ' decade' : '');
     lbl.textContent = y;
     lbl.style.left = xPx(new Date(y, 0, 1)) + 'px';
     timeline.appendChild(lbl);
-    yearTickRects.push(elBox(lbl));
   }
-  // reserve year-tick space in both zones so nothing crosses the axis
-  occAbove.push(...yearTickRects);
-  occBelow.push(...yearTickRects);
 
-  // life bands (above)
-  lifeBands.forEach(b => {
-    const left = xPx(toDate(b.start));
-    const width = xPx(toDate(b.end)) - left;
-    const band = document.createElement('div');
-    band.className = 'life-band';
-    band.style.left = left + 'px';
-    band.style.width = width + 'px';
-    band.style.top = (AXIS_Y - 90) + 'px';
-    timeline.appendChild(band);
-    occAbove.push(elBox(band));
-
-    const lbl = document.createElement('div');
-    lbl.className = 'life-band-label';
-    lbl.textContent = `${b.icon} ${b.label} · ${durationLabel(b.start, b.end)}`;
-    lbl.style.left = (left + width/2) + 'px';
-    lbl.style.top = (AXIS_Y - 100) + 'px';
-    lbl.style.transform = 'translate(-50%, -100%)';
-    timeline.appendChild(lbl);
-    pushAway(lbl, occAbove, 'up');
-  });
-
-  // role bars (above the axis now)
-  const ROLE_BAR_Y = AXIS_Y - 38;
-  const PROJECT_BAR_Y = ROLE_BAR_Y - 22;
-  const sortedRoles = [...roles].sort((a,b) => toDate(a.start) - toDate(b.start));
-  // Solid blue scale: light (newest) → dark (oldest). Assigned by start date.
+  // ── role color scheme ─────────────────────────────────────────────────────
   const rolesByNewest = [...roles].sort((a,b) => toDate(b.start) - toDate(a.start));
-  const roleColorMap = new Map();
-  const N = rolesByNewest.length;
+  const roleColorMap  = new Map();
   rolesByNewest.forEach((r, i) => {
-    const t = N > 1 ? i / (N - 1) : 0;           // 0 = newest, 1 = oldest
-    const hue = 212;
-    const sat = 90 - t * 20;                      // 90% → 70%
-    const light = 72 - t * 44;                    // 72% → 28%
-    const stripe = Math.max(18, light - 14);
-    roleColorMap.set(r.id, {
-      main: `hsl(${hue}, ${sat}%, ${light}%)`,
-      stripe: `hsl(${hue}, ${sat}%, ${stripe}%)`
-    });
+    const t = rolesByNewest.length > 1 ? i / (rolesByNewest.length - 1) : 0;
+    const sat = Math.round(90 - t * 20), light = Math.round(72 - t * 44);
+    roleColorMap.set(r.id, `hsl(212, ${sat}%, ${light}%)`);
   });
-  const roleBarEls = [];
+
+  // ── draw role branches ────────────────────────────────────────────────────
+  const CARD_W = 40, CARD_H = 40;
   sortedRoles.forEach(r => {
-    const left = xPx(toDate(r.start));
-    const right = xPx(r.end ? toDate(r.end) : maxDate);
-    const width = Math.max(8, right - left - 2);
-    const bar = document.createElement('div');
-    bar.className = 'role-bar ' + r.cls + (r.contract ? ' contract' : '');
-    bar.style.left = (left + 1) + 'px';
-    bar.style.width = width + 'px';
-    bar.style.top = ROLE_BAR_Y + 'px';
-    const rc = roleColorMap.get(r.id);
-    if (rc) {
-      bar.style.setProperty('--role', rc.main);
-      bar.style.setProperty('--role-2', rc.stripe);
-    }
-    bar.dataset.id = r.id;
-    bar.title = `${r.title} · ${r.company} (${durationLabel(r.start, r.end)})`;
-    bar.addEventListener('click', () => scrollToCard('role-' + r.id));
-    timeline.appendChild(bar);
-    occAbove.push(elBox(bar));
-    roleBarEls.push({ r, left, right, width });
-  });
+    const x1     = xPx(toDate(r.start));
+    const x2     = xPx(r.end ? toDate(r.end) : maxDate);
+    const bY     = axisY - LANE_H;   // uniform low branch — GitHub-style hump
+    const color  = roleColorMap.get(r.id) || '#58a6ff';
+    const x1c    = x1 + CURVE_R;
+    const x2c    = x2 - CURVE_R;
 
-  // project bars
-  const PROJECT_ROW_H = 14;
-  const projectEntries = [];
-  projects.forEach((p, i) => {
-    const left = xPx(toDate(p.start));
-    const right = xPx(p.end ? toDate(p.end) : maxDate);
-    const width = Math.max(8, right - left - 2);
-    const rowY = PROJECT_BAR_Y - i * PROJECT_ROW_H;
-    const bar = document.createElement('div');
-    bar.className = 'project-bar ' + (p.cls || '');
-    bar.style.left = (left + 1) + 'px';
-    bar.style.width = width + 'px';
-    bar.style.top = rowY + 'px';
-    bar.title = `${p.title} · ${durationLabel(p.start, p.end)}`;
-    timeline.appendChild(bar);
-    occAbove.push(elBox(bar));
-    projectEntries.push({ p, left, right, width, rowY });
-  });
+    // branch path
+    const d = x2c > x1c
+      ? `M${x1} ${axisY} C${x1} ${bY} ${x1} ${bY} ${x1c} ${bY} L${x2c} ${bY} C${x2} ${bY} ${x2} ${axisY} ${x2} ${axisY}`
+      : `M${x1} ${axisY} C${x1} ${bY} ${x2} ${bY} ${x2} ${axisY}`;
 
-  // skill bands (placed BELOW the axis, under the year ticks). Each band gets
-  // its own row so multiple skills can be shown without overlapping.
-  const SKILL_BAR_BELOW_Y = AXIS_Y + 38;
-  const SKILL_ROW_H = 30; // band + label row
-  skillBands.forEach((s, i) => {
-    const left = xPx(toDate(s.start));
-    const right = xPx(s.end ? toDate(s.end) : maxDate);
-    const width = Math.max(8, right - left - 2);
-    const rowTop = SKILL_BAR_BELOW_Y + i * SKILL_ROW_H;
-    const bar = document.createElement('div');
-    bar.className = 'skill-band';
-    bar.style.left = (left + 1) + 'px';
-    bar.style.width = width + 'px';
-    bar.style.top = rowTop + 'px';
-    if (s.color) {
-      // Build a gradient + border that match the band's accent colour.
-      bar.style.background = `linear-gradient(90deg, ${hexToRgba(s.color, 0.45)}, ${hexToRgba(s.color, 0.7)})`;
-      bar.style.borderColor = hexToRgba(s.color, 0.7);
-    }
-    bar.title = `${s.label} · ${durationLabel(s.start, s.end)}`;
-    timeline.appendChild(bar);
-    occBelow.push(elBox(bar));
+    const path = svgEl('path', { d, fill:'none', 'stroke-width':2, 'stroke-linecap':'round' },
+                       { stroke: color, pointerEvents:'all', cursor:'pointer' });
+    path.addEventListener('click', () => scrollToCard('role-' + r.id));
 
-    const lbl = document.createElement('div');
-    lbl.className = 'skill-band-label';
-    lbl.textContent = `${s.icon || ''} ${s.label} · ${durationLabel(s.start, s.end)}`;
-    lbl.style.left = (left + width / 2) + 'px';
-    lbl.style.top = (rowTop + 14) + 'px';
-    lbl.style.transform = 'translateX(-50%)';
-    if (s.color) {
-      lbl.style.color = s.color;
-      lbl.style.borderColor = hexToRgba(s.color, 0.5);
-    }
-    timeline.appendChild(lbl);
-    pushAway(lbl, occBelow, 'down');
-  });
-
-  // milestone dots (fixed on axis)
-  const sortedMilestones = [...milestones]
-    .filter(m => {
-      if (m.isExam) return showExams;
-      if (m.isTraining) return showTraining;
-      return true;
-    })
-    .sort((a,b) => toDate(a.date) - toDate(b.date));
-  const milestoneEntries = [];
-  sortedMilestones.forEach((m, idx) => {
-    const x = xPx(toDate(m.date));
-    const mid = 'mile-' + idx;
-    const typeColor = m.isExam ? 'var(--c-exam)' : (m.isTraining ? 'var(--c-train)' : 'var(--c-mile)');
-    const dot = document.createElement('div');
-    dot.className = 'milestone-dot';
-    dot.style.left = x + 'px';
-    dot.style.top = AXIS_Y + 'px';
-    dot.style.background = typeColor;
-    dot.style.boxShadow = `0 0 0 2px ${typeColor}`;
-    dot.style.cursor = 'pointer';
-    dot.addEventListener('click', () => scrollToCard(mid));
-    timeline.appendChild(dot);
-    milestoneEntries.push({ m, x, mid, typeColor });
-  });
-
-  // project labels — push UP (projects sit above the axis now)
-  projectEntries.forEach(({ p, left, right, width, rowY }) => {
-    if (width <= 80) return;
-    const lbl = document.createElement('div');
-    lbl.style.position = 'absolute';
-    lbl.style.left = (left + width/2) + 'px';
-    lbl.style.top = (rowY - 4) + 'px';
-    lbl.style.transform = 'translate(-50%, -100%)';
-    lbl.style.fontSize = '0.72em';
-    lbl.style.color = 'var(--muted)';
-    lbl.style.whiteSpace = 'nowrap';
-    lbl.style.zIndex = '3';
-    lbl.textContent = `${p.icon || '🔹'} ${p.title} · ${durationLabel(p.start, p.end)}`;
-    timeline.appendChild(lbl);
-    pushAway(lbl, occAbove, 'up');
-  });
-
-  // milestone labels — BELOW the axis now (jobs are on top)
-  const milestoneLabels = [];
-  milestoneEntries.forEach(({ m, x, mid, typeColor }) => {
-    const lbl = document.createElement('div');
-    lbl.className = 'milestone-label';
-    lbl.style.cursor = 'pointer';
-    lbl.style.borderColor = typeColor;
-    lbl.style.color = typeColor;
-    lbl.addEventListener('click', () => scrollToCard(mid));
-    const logoHtml = m.logo ? `<img src="${m.logo}" style="width:24px;height:24px;border-radius:4px;background:#fff;padding:2px;display:block;margin:0 auto 4px" onerror="this.style.display='none'">` : `<span class="icon">${m.icon}</span>`;
-    lbl.innerHTML = `${logoHtml}${m.label}`;
-    lbl.style.left = x + 'px';
-    lbl.style.top = (AXIS_Y + 28) + 'px';
-    lbl.style.transform = 'translateX(-50%)';
-    timeline.appendChild(lbl);
-    pushAway(lbl, occBelow, 'down');
-    milestoneLabels.push({ lbl, x, above: false });
-  });
-
-  // pins connecting each milestone dot to its resolved label
-  milestoneLabels.forEach(({ lbl, x, above }) => {
-    const box = elBox(lbl);
-    const pin = document.createElement('div');
-    pin.className = 'milestone-pin';
-    pin.style.left = (x - 1) + 'px';
-    if (above) {
-      pin.style.top = (box.bottom + 2) + 'px';
-      pin.style.height = (AXIS_Y - box.bottom - 2) + 'px';
-    } else {
-      pin.style.top = AXIS_Y + 'px';
-      pin.style.height = (box.top - AXIS_Y - 2) + 'px';
-    }
-    timeline.appendChild(pin);
-  });
-
-  // role cards — try a single row first (when there's enough horizontal space);
-  // fall back to 2 rows if any card can't fit on row 0.
-  const CARD_W = 160;
-  const CARD_H = 120;
-  const ROW1_TOP = ROLE_BAR_Y - CARD_H - 10;      // closest to the bar
-  const ROW2_TOP = ROW1_TOP - CARD_H - 12;        // further above
-  const GAP = 8;
-  const minLeft = LEFT_PAD;
-  const maxLeft = totalWidth - CARD_W - LEFT_PAD;
-  // For a given row and desired left, find the nearest left that doesn't overlap.
-  // Returns { left, dist } or null if no space exists in [minLeft, maxLeft].
-  const findSpot = (occupants, desiredLeft) => {
-    const occ = [...occupants].sort((a,b) => a[0] - b[0]);
-    const free = [];
-    let cursor = minLeft;
-    occ.forEach(([l, rg]) => {
-      const blockStart = l - GAP;
-      const blockEnd = rg + GAP;
-      if (blockStart - cursor >= CARD_W) free.push([cursor, blockStart - CARD_W]);
-      cursor = Math.max(cursor, blockEnd);
+    // dots on trunk at start & end
+    [x1, x2].forEach(cx => {
+      svgEl('circle', { cx, cy:axisY, r:DOT_R, 'stroke-width':2.5 },
+            { fill:color, stroke:'var(--bg)' });
     });
-    if (maxLeft - cursor >= 0) free.push([cursor, maxLeft]);
-    if (!free.length) return null;
-    let best = null;
-    free.forEach(([lo, hi]) => {
-      const clamped = Math.max(lo, Math.min(desiredLeft, hi));
-      const d = Math.abs(clamped - desiredLeft);
-      if (!best || d < best.dist) best = { left: clamped, dist: d };
-    });
-    return best;
-  };
-  const sortedByStart = [...roleBarEls].sort((a,b) => a.left - b.left);
-  // Pre-compute desired left for each card
-  const desiredLefts = sortedByStart.map(({ left, right }) => {
-    const center = (left + right) / 2;
-    return Math.max(minLeft, Math.min(center - CARD_W / 2, maxLeft));
-  });
-  // Attempt to lay out across `numRows` rows. Returns placements or null if
-  // any card can't be placed without overlapping. (Cards still try to stay
-  // close to their bar centre — but the only constraint is non-overlap.)
-  const layout = (numRows) => {
-    const rowOccupants = Array.from({ length: numRows }, () => []);
-    const placements = [];
-    for (let i = 0; i < sortedByStart.length; i++) {
-      const desired = desiredLefts[i];
-      // Prefer the lowest row that has ANY free spot — cards can move
-      // horizontally as far as needed to stay on the lower row before we
-      // escalate to the next row.
-      let best = null;
-      for (let row = 0; row < numRows; row++) {
-        const s = findSpot(rowOccupants[row], desired);
-        if (s) { best = { ...s, row }; break; }
-      }
-      if (!best) return null;
-      rowOccupants[best.row].push([best.left, best.left + CARD_W]);
-      placements.push({ row: best.row, left: best.left });
-    }
-    return placements;
-  };
-  let placements = layout(1) || layout(2);
-  if (!placements) {
-    // Worst case: force-place on row 1 (will overlap, but better than crashing).
-    placements = sortedByStart.map((_, i) => ({ row: 1, left: desiredLefts[i] }));
-  }
-  const singleRow = placements.every(p => p.row === 0);
-  sortedByStart.forEach(({ r, left: barLeft, right: barRight }, i) => {
-    const { row, left: cardLeft } = placements[i];
-    const cardTop = singleRow ? ROW1_TOP : (row === 0 ? ROW1_TOP : ROW2_TOP);
+
+    // favicon icon card above branch start
     const card = document.createElement('div');
     card.className = 'role-card';
     card.dataset.id = r.id;
-    card.style.left = cardLeft + 'px';
-    card.style.top = cardTop + 'px';
-    const contractBadge = r.contract ? `<span class="contract-badge">Contract</span>` : '';
-    card.innerHTML = `
-      <div class="head">
-        <img class="logo" src="${r.logo || ''}" alt="" onerror="this.classList.add('missing')">
-        <div>
-          <div class="company">${r.company}${contractBadge}</div>
-          <div class="title">${r.title}</div>
-        </div>
-      </div>
-      <div class="duration">${durationLabel(r.start, r.end)}</div>
-    `;
+    card.style.left  = x1 + 'px';
+    card.style.top   = (bY - CARD_H - 6) + 'px';
+    card.innerHTML   = `<img class="logo" src="${r.logo||''}" alt="${r.company}"
+      title="${r.company} — ${r.title}" onerror="this.classList.add('missing')">`;
     card.addEventListener('click', () => scrollToCard('role-' + r.id));
     timeline.appendChild(card);
-    occAbove.push(elBox(card));
-
-    // Z-shape connector: card bottom → mid Y → bar centre → bar top.
-    const barCenterX = (barLeft + barRight) / 2;
-    const cardCenterX = cardLeft + CARD_W / 2;
-    // Clamp the connector's horizontal anchor on the card so it sits within
-    // the card's actual width (looks cleaner when card is far from the bar).
-    const cardAnchorX = Math.max(cardLeft + 12, Math.min(cardCenterX, cardLeft + CARD_W - 12));
-    const cardBottom = cardTop + CARD_H;
-    const barTop = ROLE_BAR_Y;
-    const midY = Math.round((cardBottom + barTop) / 2);
-
-    const seg = (cls, left, top, w, h) => {
-      const s = document.createElement('div');
-      s.className = 'card-connector ' + cls;
-      s.style.left = left + 'px';
-      s.style.top = top + 'px';
-      if (w != null) s.style.width = w + 'px';
-      if (h != null) s.style.height = h + 'px';
-      timeline.appendChild(s);
-    };
-    // vertical from card bottom down to midY (under the card)
-    seg('v', cardAnchorX, cardBottom, null, Math.max(0, midY - cardBottom));
-    // horizontal from card anchor x across to bar centre x at midY
-    const hLeft = Math.min(cardAnchorX, barCenterX);
-    const hRight = Math.max(cardAnchorX, barCenterX);
-    seg('h', hLeft, midY, hRight - hLeft, null);
-    // vertical from midY down to top of the bar
-    seg('v', barCenterX, midY, null, Math.max(0, barTop - midY));
-
-    applyRoleColor(r.id, r.logo);
   });
 
-  // compute final timeline bounds — shift everything down if anything went above 0
-  let minTop = 0, maxBottom = AXIS_Y + 80;
-  occAbove.forEach(b => { if (b.top < minTop) minTop = b.top; });
-  occBelow.forEach(b => { if (b.bottom > maxBottom) maxBottom = b.bottom; });
-  if (minTop < 0) {
-    const shift = -minTop + 16;
-    Array.from(timeline.children).forEach(el => {
-      const t = parseFloat(el.style.top);
-      if (!isNaN(t)) el.style.top = (t + shift) + 'px';
+  // ── projects (thin sub-branches if enabled) ───────────────────────────────
+  if (showProjects) {
+    projects.forEach(p => {
+      const parent = roles.find(r => r.id === p.parent);
+      if (!parent) return;
+      const bY    = axisY - LANE_H;
+      const subY  = bY - 12;
+      const x1    = xPx(toDate(p.start));
+      const x2    = xPx(p.end ? toDate(p.end) : maxDate);
+      svgEl('line', { x1, y1:subY, x2, y2:subY, 'stroke-width':1.5, 'stroke-dasharray':'4 3' },
+            { stroke: 'var(--c-project)' });
+      [x1, x2].forEach(cx =>
+        svgEl('circle', { cx, cy:subY, r:3 }, { fill:'var(--c-project)', stroke:'var(--bg)', 'stroke-width':'1.5' })
+      );
     });
-    timeline.style.setProperty('--axis-y', (AXIS_Y + shift) + 'px');
-    maxBottom += shift;
   }
+
+  // ── skill bands (below axis) — git-branch style ──────────────────────────
+  const SKILL_BELOW_Y = axisY + 38;
+  const SKILL_ROW_H   = 36;
+  const occBelow      = [];
+  skillBands.forEach((s, i) => {
+    const left  = xPx(toDate(s.start));
+    const right = xPx(s.end ? toDate(s.end) : maxDate);
+    const bY    = SKILL_BELOW_Y + i * SKILL_ROW_H;
+    const color = s.color || 'var(--accent)';
+    const x1c   = left + CURVE_R;
+    const x2c   = right - CURVE_R;
+
+    const d = x2c > x1c
+      ? (s.openEnd
+          ? `M${left} ${axisY} C${left} ${bY} ${left} ${bY} ${x1c} ${bY} L${right} ${bY}`
+          : `M${left} ${axisY} C${left} ${bY} ${left} ${bY} ${x1c} ${bY} L${x2c} ${bY} C${right} ${bY} ${right} ${axisY} ${right} ${axisY}`)
+      : `M${left} ${axisY} C${left} ${bY} ${right} ${bY} ${right} ${axisY}`;
+
+    svgEl('path', { d, fill:'none', 'stroke-width':2, 'stroke-linecap':'round' },
+          { stroke: color });
+    // start dot on trunk
+    svgEl('circle', { cx: left, cy: axisY, r: DOT_R, 'stroke-width':2.5 },
+          { fill: color, stroke: 'var(--bg)' });
+    // end dot — on trunk if branch closes, otherwise on the open branch tip
+    svgEl('circle', { cx: right, cy: s.openEnd ? bY : axisY, r: DOT_R, 'stroke-width':2.5 },
+          { fill: color, stroke: 'var(--bg)' });
+
+    const lbl = document.createElement('div');
+    lbl.className = 'skill-band-label';
+    lbl.textContent = `${s.icon||''} ${s.label} · ${durationLabel(s.start, s.end)}`;
+    lbl.style.left      = ((left + right) / 2) + 'px';
+    lbl.style.top       = (bY + 8) + 'px';
+    lbl.style.transform = 'translateX(-50%)';
+    if (s.color) { lbl.style.color = s.color; lbl.style.borderColor = hexToRgba(s.color,.5); }
+    timeline.appendChild(lbl);
+    occBelow.push(elBox(lbl));
+    pushAway(lbl, occBelow, 'down');
+  });
+
+  // ── milestones ────────────────────────────────────────────────────────────
+  const sortedMilestones = [...milestones]
+    .filter(m => { if (m.isExam) return showExams; if (m.isTraining) return showTraining; return true; })
+    .sort((a,b) => toDate(a.date) - toDate(b.date));
+
+  const milestoneLabels = [];
+  sortedMilestones.forEach((m, idx) => {
+    const x = xPx(toDate(m.date));
+    const typeColor = m.isExam ? 'var(--c-exam)' : (m.isTraining ? 'var(--c-train)' : 'var(--c-mile)');
+
+    const dot = svgEl('circle', { cx:x, cy:axisY, r:DOT_R, 'stroke-width':2.5 },
+                      { fill:typeColor, stroke:'var(--bg)', pointerEvents:'all', cursor:'pointer' });
+    dot.addEventListener('click', () => scrollToCard('mile-' + idx));
+
+    const lbl = document.createElement('div');
+    lbl.className = 'milestone-label';
+    lbl.style.cssText += `cursor:pointer;border-color:${typeColor};color:${typeColor}`;
+    lbl.addEventListener('click', () => scrollToCard('mile-' + idx));
+    const logoHtml = m.logo
+      ? `<img src="${m.logo}" style="width:24px;height:24px;border-radius:4px;background:#fff;padding:2px;display:block;margin:0 auto 4px" onerror="this.style.display='none'">`
+      : `<span class="icon">${m.icon}</span>`;
+    lbl.innerHTML = `${logoHtml}${m.label}`;
+    lbl.style.left = x + 'px';
+    lbl.style.top  = (axisY + 20) + 'px';
+    timeline.appendChild(lbl);
+    pushAway(lbl, occBelow, 'down');
+    milestoneLabels.push({ lbl, x });
+  });
+
+  // pins from axis dot to labels
+  milestoneLabels.forEach(({ lbl, x }) => {
+    const box = elBox(lbl);
+    const pin = document.createElement('div');
+    pin.className   = 'milestone-pin';
+    pin.style.left  = (x-1) + 'px';
+    pin.style.top   = axisY + 'px';
+    pin.style.height = Math.max(0, box.top - axisY - 2) + 'px';
+    timeline.appendChild(pin);
+  });
+
+  // ── final height ──────────────────────────────────────────────────────────
+  let maxBottom = axisY + 80;
+  occBelow.forEach(b => { if (b.bottom > maxBottom) maxBottom = b.bottom; });
   timeline.style.height = (maxBottom + 24) + 'px';
 }
 
@@ -1199,7 +1083,7 @@ function buildCardList() {
     });
   const items = [];
   roles.forEach(r => items.push({ kind: 'role', date: r.start, sortDate: r.end || '9999-12', data: r }));
-  projects.forEach(p => items.push({ kind: 'project', date: p.start, sortDate: p.end || '9999-12', data: p }));
+  if (showProjects) projects.forEach(p => items.push({ kind: 'project', date: p.start, sortDate: p.end || '9999-12', data: p }));
   sortedMilestones.forEach((m, idx) => items.push({ kind: 'mile', date: m.date, sortDate: m.date, data: m, idx }));
   items.sort((a,b) => toDate(b.sortDate) - toDate(a.sortDate));
 
@@ -1273,6 +1157,15 @@ toggleExamsBtn.addEventListener('click', () => {
   toggleExamsBtn.classList.toggle('active', showExams);
   toggleExamsBtn.textContent = showExams ? '🎓 Hide certifications' : '🎓 Show certifications';
   render();
+  buildCardList();
+});
+const toggleProjectsBtn = document.getElementById('toggleProjects');
+toggleProjectsBtn.addEventListener('click', () => {
+  showProjects = !showProjects;
+  toggleProjectsBtn.classList.toggle('active', showProjects);
+  toggleProjectsBtn.textContent = showProjects ? '🔹 Hide projects' : '🔹 Show projects';
+  render();
+  buildCardList();
 });
 const toggleTrainingBtn = document.getElementById('toggleTraining');
 if (toggleTrainingBtn) {
@@ -1386,6 +1279,19 @@ window.addEventListener('resize', () => {
   clearTimeout(_resizeT);
   _resizeT = setTimeout(() => location.reload(), 250);
 });
+// --- theme toggle ---
+const themeToggle = document.getElementById('themeToggle');
+function applyTheme(t) {
+  if (t === 'light') { document.documentElement.setAttribute('data-theme', 'light'); themeToggle.textContent = '☀️'; }
+  else { document.documentElement.removeAttribute('data-theme'); themeToggle.textContent = '🌙'; }
+}
+applyTheme(localStorage.getItem('theme') || 'dark');
+themeToggle.addEventListener('click', () => {
+  const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  localStorage.setItem('theme', next);
+  applyTheme(next);
+});
+
 </script>
 </body>
 </html>
